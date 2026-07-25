@@ -297,9 +297,8 @@ blockquote .attr{
     <p class="g-how">
       <span>It moves on its own &mdash; just read.</span>
       <span>Scroll any time to go faster.</span>
-      <span class="g-ring">Sound on &middot; on iPhone, switch off silent</span>
+      <span class="g-ring">Turn your volume up &middot; the story has sound</span>
     </p>
-    <div class="g-quiet" id="quiet">begin without sound</div>
   </div>
 </div>
 
@@ -323,7 +322,7 @@ function rgb(c){return `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;}
 function mix(c1,c2,t){return [lerp(c1[0],c2[0],t), lerp(c1[1],c2[1],t), lerp(c1[2],c2[2],t)];}
 
 let trees = [], reeds = [], fogBands = [], dragonflies = [], ripples = [], wakes = [],
-    minnowBursts = [], motes = [], deadFish = [], dataPts = [], dataCurve = [];
+    minnowBursts = [], motes = [], deadFish = [], dataPts = [], dataCurve = [], net = null;
 
 const PAL = {
   skyTop:   [[18,25,38],   [104,142,176]],
@@ -486,6 +485,31 @@ function buildScene(){
   for (let i=0;i<=48;i++){
     const p = i/48;
     dataCurve.push(0.5 + Math.sin(p*7.1)*0.22 + Math.sin(p*17.3)*0.09 + Math.sin(p*3.1)*0.13);
+  }
+
+  /* the network he trained, laid over the morning */
+  net = { layers: [], edges: [] };
+  const sizes = [4, 6, 6, 3];
+  const topY = H*0.055, botY = H*0.94;
+  for (let l=0;l<sizes.length;l++){
+    const col = [];
+    const n = sizes[l];
+    for (let i=0;i<n;i++){
+      col.push({
+        x: W*(0.13 + 0.245*l),
+        y: topY + (botY-topY) * (n===1 ? 0.5 : i/(n-1)) * 0.92 + (botY-topY)*0.04,
+        r: 2.4 + rnd()*1.9,
+        ph: rnd()*6.28
+      });
+    }
+    net.layers.push(col);
+  }
+  for (let l=0;l<net.layers.length-1;l++){
+    for (const a of net.layers[l]){
+      for (const b of net.layers[l+1]){
+        net.edges.push({ a, b, w: 0.25 + rnd()*0.75, sp: 0.16 + rnd()*0.34, off: rnd() });
+      }
+    }
   }
 
   ripples = []; wakes = []; minnowBursts = [];
@@ -734,6 +758,44 @@ function drawDeadFish(time){
     ctx.closePath(); ctx.fill();
     ctx.restore();
   }
+}
+
+function drawNetwork(time){
+  if (M.data < 0.01 || !net) return;
+  const a = M.data;
+  ctx.save();
+  ctx.lineCap = "round";
+
+  /* the weights */
+  for (const e of net.edges){
+    ctx.strokeStyle = `rgba(120,200,232,${0.17*a*e.w})`;
+    ctx.lineWidth = 0.6 + e.w*0.7;
+    ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
+  }
+  /* activations travelling forward through the layers */
+  for (let i=0;i<net.edges.length;i+=2){
+    const e = net.edges[i];
+    const t = ((time*e.sp + e.off) % 1);
+    const px = e.a.x + (e.b.x-e.a.x)*t, py = e.a.y + (e.b.y-e.a.y)*t;
+    const fade = Math.sin(t*Math.PI);
+    ctx.fillStyle = `rgba(190,238,255,${0.55*a*fade*e.w})`;
+    ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI*2); ctx.fill();
+  }
+  /* the units */
+  for (const col of net.layers){
+    for (const n of col){
+      const pulse = 0.55 + 0.45*Math.sin(time*1.6 + n.ph);
+      const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r*4.5);
+      g.addColorStop(0, `rgba(206,244,255,${0.75*a*pulse})`);
+      g.addColorStop(0.35,`rgba(120,200,232,${0.22*a*pulse})`);
+      g.addColorStop(1, "rgba(120,200,232,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r*4.5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = `rgba(226,248,255,${0.85*a*pulse})`;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 function drawDataOverlay(time){
@@ -1151,6 +1213,7 @@ function frame(now){
 
   Guide.tick(dt);
   pickMood();
+  Sound.setMood(moodKey);
   easeMood(dt);
   cycleSigns(dt);
 
@@ -1168,6 +1231,7 @@ function frame(now){
   drawReeds(time*0.55, true);
   drawShimmer(time);
   drawDataOverlay(time);
+  drawNetwork(time);
   drawRipples(dt);
   drawWakes(dt);
   drawMinnows(dt);
@@ -1204,6 +1268,19 @@ document.querySelectorAll(".rv").forEach(el => io.observe(el));
 const Sound = (() => {
   let actx=null, master=null, verb=null, dry=null, wet=null, hp=null;
   let running=false, timers=[], sampleBuf=null, lookedForRecording=false;
+  /* one bus per voice of the score, so the story can cross-fade between them */
+  const bus = {};
+  let moodNow = "dawn";
+  const SCORE = {
+    dawn:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
+    fog:       { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
+    signs:     { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
+    guidebook: { nature:1.00, bird:0.90, om:0, tk:0, sn:0 },
+    redtide:   { nature:0.18, bird:0.00, om:1.00, tk:0, sn:0 },   /* the birds stop */
+    data:      { nature:0.10, bird:0.00, om:0.10, tk:1.00, sn:0 },
+    camp:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },      /* back to the pond */
+    closing:   { nature:0.75, bird:0.55, om:0, tk:0, sn:1.00 }
+  };
 
   function impulse(seconds, decay){
     const rate = actx.sampleRate, len = Math.floor(rate*seconds);
@@ -1251,7 +1328,38 @@ const Sound = (() => {
     hp  = actx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 120;
     verb.connect(wet); wet.connect(hp); dry.connect(hp);
     hp.connect(master); master.connect(actx.destination);
+
+    for (const name of ["nature","bird","om","tk","sn"]){
+      const g = actx.createGain();
+      g.gain.value = (name === "nature" || name === "bird") ? 1 : 0;
+      g.connect(dry); g.connect(verb);
+      bus[name] = g;
+    }
     buildBed();
+    buildOminous();
+  }
+
+  /* --- the red tide: the morning goes wrong --- */
+  function buildOminous(){
+    /* a low cluster a semitone apart, which never quite resolves */
+    [[41.20,"sine"],[43.65,"sine"],[82.41,"triangle"],[87.31,"triangle"]].forEach(([f,type],i)=>{
+      const o = actx.createOscillator(); o.type = type; o.frequency.value = f;
+      o.detune.value = (i%2 ? 7 : -7);
+      const g = actx.createGain(); g.gain.value = i<2 ? 0.16 : 0.055;
+      const swell = actx.createOscillator(); swell.frequency.value = 0.030 + i*0.011;
+      const sg = actx.createGain(); sg.gain.value = i<2 ? 0.075 : 0.030;
+      swell.connect(sg); sg.connect(g.gain); swell.start();
+      o.connect(g); g.connect(bus.om); o.start();
+    });
+    /* a dark filtered wash rolling underneath */
+    const nb = noiseBuffer(8);
+    const src = actx.createBufferSource(); src.buffer = nb; src.loop = true;
+    const bp = actx.createBiquadFilter(); bp.type="lowpass"; bp.frequency.value = 240; bp.Q.value = 6;
+    const sweep = actx.createOscillator(); sweep.frequency.value = 0.021;
+    const sweepG = actx.createGain(); sweepG.gain.value = 120;
+    sweep.connect(sweepG); sweepG.connect(bp.frequency); sweep.start();
+    const g = actx.createGain(); g.gain.value = 0.16;
+    src.connect(bp); bp.connect(g); g.connect(bus.om); src.start();
   }
 
   /* --- ambience: air, water, no synth pad --- */
@@ -1261,7 +1369,7 @@ const Sound = (() => {
     const wind = actx.createBufferSource(); wind.buffer = nb; wind.loop = true;
     const wf = actx.createBiquadFilter(); wf.type="lowpass"; wf.frequency.value = 380; wf.Q.value=0.3;
     const wg = actx.createGain(); wg.gain.value = 0.050;
-    wind.connect(wf); wf.connect(wg); wg.connect(dry); wg.connect(verb); wind.start();
+    wind.connect(wf); wf.connect(wg); wg.connect(bus.nature); wind.start();
     const gust = actx.createOscillator(); gust.frequency.value = 0.043;
     const gg = actx.createGain(); gg.gain.value = 0.030;
     gust.connect(gg); gg.connect(wg.gain); gust.start();
@@ -1270,13 +1378,13 @@ const Sound = (() => {
     const low = actx.createBufferSource(); low.buffer = nb; low.loop = true;
     const lf = actx.createBiquadFilter(); lf.type="lowpass"; lf.frequency.value = 110;
     const lg = actx.createGain(); lg.gain.value = 0.055;
-    low.connect(lf); lf.connect(lg); lg.connect(dry); low.start();
+    low.connect(lf); lf.connect(lg); lg.connect(bus.nature); low.start();
 
     /* high airy hush, only into the reverb so it sits far away */
     const hush = actx.createBufferSource(); hush.buffer = nb; hush.loop = true;
     const hf = actx.createBiquadFilter(); hf.type="bandpass"; hf.frequency.value = 3600; hf.Q.value = 0.6;
     const hg = actx.createGain(); hg.gain.value = 0.016;
-    hush.connect(hf); hf.connect(hg); hg.connect(verb); hush.start();
+    hush.connect(hf); hf.connect(hg); hg.connect(bus.nature); hush.start();
   }
 
   /* one flute-like syllable: two voices, a swooping contour, fast attack */
@@ -1313,7 +1421,7 @@ const Sound = (() => {
 
     oA.connect(gA); oB.connect(gB); oH.connect(gH);
     gA.connect(env); gB.connect(env); gH.connect(env);
-    env.connect(dry); env.connect(verb);
+    env.connect(bus.bird);
     [oA,oB,oH].forEach(o=>{ o.start(t0); o.stop(t0+dur+0.05); });
   }
 
@@ -1341,7 +1449,7 @@ const Sound = (() => {
     am.connect(amg); amg.connect(env.gain);
 
     oA.connect(env); oB.connect(gB); gB.connect(env);
-    env.connect(dry); env.connect(verb);
+    env.connect(bus.bird);
     [oA,oB,lfo,am].forEach(o=>{ o.start(t0); o.stop(t0+dur+0.05); });
   }
 
@@ -1355,7 +1463,7 @@ const Sound = (() => {
     env.gain.setValueAtTime(0.0001, t0);
     env.gain.exponentialRampToValueAtTime(gain, t0+0.008);
     env.gain.exponentialRampToValueAtTime(0.0001, t0+0.055);
-    o.connect(env); env.connect(verb); env.connect(dry);
+    o.connect(env); env.connect(bus.bird);
     o.start(t0); o.stop(t0+0.08);
   }
 
@@ -1388,7 +1496,7 @@ const Sound = (() => {
     src.buffer = sampleBuf;
     src.playbackRate.value = 0.98 + Math.random()*0.04;
     const g = actx.createGain(); g.gain.value = far ? 0.22 : 0.62;
-    src.connect(g); g.connect(dry); g.connect(verb);
+    src.connect(g); g.connect(bus.bird);
     src.start(actx.currentTime + 0.02);
   }
 
@@ -1397,6 +1505,7 @@ const Sound = (() => {
   function scheduleThrush(delay){
     const id = setTimeout(()=>{
       if (!running) return;
+      if ((SCORE[moodNow] || {}).bird < 0.1){ scheduleThrush(4 + Math.random()*4); return; }
       sing(false);
       /* now and then, an answering bird further off in the trees */
       if (Math.random() < 0.38){
@@ -1418,7 +1527,7 @@ const Sound = (() => {
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(0.022 + Math.random()*0.014, t0+0.005);
     g.gain.exponentialRampToValueAtTime(0.0001, t0+0.24);
-    o.connect(g); g.connect(verb); g.connect(dry);
+    o.connect(g); g.connect(bus.nature);
     o.start(t0); o.stop(t0+0.28);
   }
   function lap(){
@@ -1429,7 +1538,7 @@ const Sound = (() => {
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.linearRampToValueAtTime(0.035, t0+0.12);
     g.gain.exponentialRampToValueAtTime(0.0001, t0+0.45);
-    src.connect(bp); bp.connect(g); g.connect(dry); g.connect(verb);
+    src.connect(bp); bp.connect(g); g.connect(bus.nature);
     src.start(t0); src.stop(t0+0.5);
   }
   function peep(){
@@ -1443,9 +1552,110 @@ const Sound = (() => {
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(0.013, t0+0.015);
     g.gain.exponentialRampToValueAtTime(0.0001, t0+0.13);
-    o.connect(g); g.connect(verb);
+    o.connect(g); g.connect(bus.nature);
     o.start(t0); o.stop(t0+0.16);
   }
+  /* --- the model: machine-made, in strict time --- */
+  function kick(t0){
+    const o = actx.createOscillator(); o.type="sine";
+    o.frequency.setValueAtTime(128, t0);
+    o.frequency.exponentialRampToValueAtTime(44, t0+0.09);
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.34, t0+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.24);
+    o.connect(g); g.connect(bus.tk);
+    o.start(t0); o.stop(t0+0.26);
+  }
+  function hat(t0, open){
+    const src = actx.createBufferSource(); src.buffer = noiseBuffer(0.2);
+    const hpf = actx.createBiquadFilter(); hpf.type="highpass"; hpf.frequency.value = 7200;
+    const g = actx.createGain();
+    const dur = open ? 0.13 : 0.035;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(open ? 0.055 : 0.075, t0+0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    src.connect(hpf); hpf.connect(g); g.connect(bus.tk);
+    src.start(t0); src.stop(t0+dur+0.02);
+  }
+  function blip(t0, f, dur, type, level){
+    const o = actx.createOscillator(); o.type = type || "square";
+    o.frequency.setValueAtTime(f, t0);
+    const lp = actx.createBiquadFilter(); lp.type="lowpass";
+    lp.frequency.setValueAtTime(f*6, t0);
+    lp.frequency.exponentialRampToValueAtTime(f*1.6, t0+dur);
+    lp.Q.value = 7;
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(level, t0+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(lp); lp.connect(g); g.connect(bus.tk);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }
+  const ARP = [110, 164.81, 220, 164.81, 130.81, 196, 261.63, 196];
+  let step = 0;
+  function technoStep(){
+    const id = setTimeout(technoStep, 125);            /* sixteenths at 120bpm */
+    timers.push(id);
+    if (!running || (SCORE[moodNow]||{}).tk < 0.5) { step = 0; return; }
+    const t = actx.currentTime + 0.03;
+    if (step % 4 === 0) kick(t);
+    if (step % 2 === 1) hat(t, step % 8 === 7);
+    blip(t, ARP[step % ARP.length] * (step % 16 >= 8 ? 2 : 1), 0.10, "square", 0.055);
+    if (step % 16 === 12) blip(t, 1760, 0.06, "sawtooth", 0.030);
+    step = (step + 1) % 32;
+  }
+
+  /* --- the close: a santoor, struck softly --- */
+  const RAGA = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+  function santoorNote(t0, f, level){
+    /* hammered strings: inharmonic partials with a long shimmering decay */
+    [[1,1],[2.01,0.44],[3.03,0.20],[4.07,0.10],[5.9,0.05]].forEach(([mult,amp])=>{
+      const o = actx.createOscillator(); o.type="sine";
+      o.frequency.value = f*mult;
+      const g = actx.createGain();
+      const dur = 2.6 / (1 + (mult-1)*0.55);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(level*amp, t0+0.007);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+      o.connect(g); g.connect(bus.sn);
+      o.start(t0); o.stop(t0+dur+0.05);
+    });
+  }
+  function santoorPhrase(){
+    const t0 = actx.currentTime + 0.05;
+    const start = Math.floor(Math.random()*4);
+    const n = 3 + Math.floor(Math.random()*3);
+    let t = t0;
+    for (let i=0;i<n;i++){
+      const idx = Math.min(RAGA.length-1, Math.max(0, start + [0,2,1,3,2,4][i%6] - (Math.random()<0.3?1:0)));
+      santoorNote(t, RAGA[idx], 0.085 + Math.random()*0.030);
+      /* santoor is struck in quick pairs as often as single notes */
+      if (Math.random() < 0.45) santoorNote(t + 0.085, RAGA[idx], 0.042);
+      t += 0.34 + Math.random()*0.46;
+    }
+  }
+  function scheduleSantoor(){
+    const id = setTimeout(()=>{
+      if (running && (SCORE[moodNow]||{}).sn > 0.5) santoorPhrase();
+      scheduleSantoor();
+    }, (2.6 + Math.random()*2.6)*1000);
+    timers.push(id);
+  }
+
+  function setMood(key){
+    if (!actx || !bus.nature || key === moodNow) return;
+    moodNow = key;
+    const s = SCORE[key] || SCORE.dawn;
+    const now = actx.currentTime;
+    for (const name of Object.keys(s)){
+      const g = bus[name].gain;
+      g.cancelScheduledValues(now);
+      g.setValueAtTime(g.value, now);
+      g.linearRampToValueAtTime(s[name], now + 2.6);   /* slow, so nothing jolts */
+    }
+  }
+
   function scheduleAmbient(){
     const id = setTimeout(()=>{
       if (!running) return;
@@ -1468,6 +1678,8 @@ const Sound = (() => {
     master.gain.linearRampToValueAtTime(0.9, actx.currentTime + 3.0);
     scheduleThrush(1.0);
     scheduleAmbient();
+    technoStep();
+    scheduleSantoor();
   }
   function off(){
     if (!actx) return;
@@ -1477,7 +1689,7 @@ const Sound = (() => {
     master.gain.linearRampToValueAtTime(0.0001, actx.currentTime + 0.9);
     timers.forEach(clearTimeout); timers = [];
   }
-  return { on, off, isOn: ()=>running, usingRecording: ()=> !!sampleBuf };
+  return { on, off, setMood, isOn: ()=>running, usingRecording: ()=> !!sampleBuf };
 })();
 
 /* ============================================================
@@ -1501,6 +1713,10 @@ const Guide = (() => {
       if (pausedFor <= 0 && !manual) sync();
       return;
     }
+    /* if the page moved and it wasn't us, the reader took over — hand it back.
+       Catches scrollbar drags, arrow keys, anchor jumps and anything else that
+       never fires a wheel or touch event. */
+    if (Math.abs(window.scrollY - pos) > 4){ nudge(); return; }
     if (atEnd()){ setOn(false); return; }
     pos += (maxScroll() / TOTAL_SECONDS) * dt;
     window.scrollTo(0, Math.round(pos));
@@ -1550,8 +1766,7 @@ async function begin(withSound){
   setTimeout(()=>{ gate.style.display = "none"; }, 1500);
 }
 
-gate.addEventListener("click", (e)=>{ begin(e.target.id !== "quiet"); });
-document.getElementById("quiet").addEventListener("click",(e)=>{ e.stopPropagation(); begin(false); });
+gate.addEventListener("click", ()=> begin(true));
 
 btn.addEventListener("click", async ()=>{
   if (Sound.isOn()){ Sound.off(); setBtn(false); }
