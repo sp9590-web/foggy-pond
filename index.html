@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>Fishing, Not Catching</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230d1218'/%3E%3Ccircle cx='16' cy='12' r='6' fill='%23e8c893' opacity='0.9'/%3E%3Cpath d='M2 22 q7 -3 14 0 t14 0' stroke='%23cfc7bb' stroke-width='1.6' fill='none' opacity='0.75'/%3E%3Cpath d='M2 27 q7 -3 14 0 t14 0' stroke='%23cfc7bb' stroke-width='1.4' fill='none' opacity='0.5'/%3E%3C/svg%3E">
 <style>
 :root{
   --ink:#f1ece4;
@@ -84,6 +85,9 @@ blockquote .attr{
   display:block; margin-top:1rem; font-family:var(--sans); font-style:normal;
   font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-dim);
 }
+/* the three cues, lit as the pond performs each one */
+.cue{font-style:italic; color:var(--ink); transition:color .9s ease, text-shadow .9s ease}
+.cue.live{color:var(--gold); text-shadow:0 0 18px rgba(232,200,147,.55)}
 .signs{list-style:none; margin:2rem 0 0; padding:0}
 .signs li{
   font-size:clamp(1rem,2.6vw,1.12rem); line-height:1.6; padding:.7rem 0 .7rem 1.5rem;
@@ -223,51 +227,55 @@ blockquote .attr{
     <div class="wrap">
       <div class="kicker">A Morning at the Water's Edge</div>
       <h1>Fishing,<br><em>Not Catching</em></h1>
-      <p class="dek">The fog came in low, as if the pond were exhaling.</p>
+      <p class="dek">The fog came in low, just above the water, as if the pond were exhaling.</p>
     </div>
     <div class="scrollcue">Scroll</div>
   </section>
 
   <section class="beat" data-mood="fog">
     <div class="wrap plate rv">
-      <p class="lede">The fog came in low, as if the pond were exhaling. Somewhere in the shrouded trees, a wood thrush welcomed the dawn with its flute-like song. I was five, with a fishing rod taller than me. Nothing bit. Yet the pond was speaking in signs I had not yet learned to read. That morning is my earliest memory of learning to pay attention, a habit I have carried far beyond that pond.</p>
+      <p class="lede">The fog came in low, just above the water, as if the pond were exhaling. Dragonflies danced over the surface in flashes of blue, and somewhere in the shrouded trees a wood thrush welcomed the morning with its flute-like song.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-mood="pair">
+    <div class="wrap plate rv">
+      <p>I was five, gripping a fishing rod almost as tall as I was. No bites, no splashes, no triumph, but I didn&rsquo;t feel bored. I felt like I was being let in on something. My grandfather stood a few feet down the bank. He never told me to be patient. He simply was, and I learned it from him the way you learn a language, by being near it.</p>
     </div>
   </section>
 
   <section class="beat" data-mood="signs">
     <div class="wrap plate rv">
-      <p>My grandfather stood a few feet down the bank. He noticed everything and announced nothing. I learned it the way you learn a language, by being near it.</p>
-      <ul class="signs" id="signs">
-        <li data-sign="dimple">A dimple meant <b>an insect had landed.</b></li>
-        <li data-sign="rise">Widening rings meant <b>a bluegill had risen to eat it.</b></li>
-        <li data-sign="minnow">Minnows scattering toward shore meant <b>something larger beneath.</b></li>
-        <li data-sign="wake">A dark patch moving against the current <b>was not a shadow.</b></li>
-      </ul>
-      <p style="margin-top:2rem">The pond was gossiping all morning, and I was learning the words.</p>
+      <p id="signsText">I learned to cast farther and tie cleaner knots, but the real lessons were more subtle. <em class="cue" data-sign="rise">A ripple that didn&rsquo;t repeat</em>, <em class="cue" data-sign="wake">a shadow that held too long beneath the surface</em>, <em class="cue" data-sign="wind">a sudden shift in wind</em>. The reward wasn&rsquo;t the fish. It was the slow pleasure of a morning spent paying attention.</p>
     </div>
   </section>
 
   <section class="beat" data-mood="guidebook">
     <div class="wrap plate rv">
-      <p>At fourteen, I put what I had learned into a fishing guidebook. No teacher had assigned it. It had chapters and photographs, with a dedication page for my grandfather. Libraries near home still shelve it. My own copy has a water stain on the cover. I wrote:</p>
+      <p>When I was fourteen, I tried to capture that feeling, not for school or a grade, but in a fishing guidebook I wrote. A real one with chapters, pictures, and a dedication page. In it, I wrote:</p>
       <blockquote>
         &ldquo;I have spent countless hours waiting for a bite. Many times I have been unsuccessful in catching what I was looking for, but, over time, I have learned that it&rsquo;s about fishing and not catching.&rdquo;
         <span class="attr">Age Fourteen &middot; Chapter One</span>
       </blockquote>
-      <p>Its pages were about lures and bait, but underneath, I now realize, was a field guide to attention.</p>
+      <p>At the time, I thought I was writing about fish and lures and bait. Looking back, I was describing the quiet reward of patience and, without really realizing it, writing instructions for myself.</p>
     </div>
   </section>
 
   <section class="beat" data-mood="redtide">
     <div class="wrap plate rv">
-      <p>The winter I was fifteen, a red tide moved through the Gulf Coast and turned water I had fished for years toxic. Fish floated belly-up by the thousands. The trouble had started long before it became visible. For the first time, the water needed something back from me. Wanting to understand the hidden mechanics behind the collapse, I turned to data.</p>
+      <p>The summer I was sixteen, the water showed me something it never had before. A red tide moved through a coast I had fished for years, an algal bloom that turned the water toxic. Fish surfaced belly-up by the thousands, and for the first time, the water I loved needed something back from me.</p>
     </div>
   </section>
 
   <section class="beat" data-mood="data">
     <div class="wrap plate rv">
-      <p>Research, I discovered, was fishing in another form. Satellite observations were public but difficult to retrieve in bulk, so I wrote a program to scrape them and match each observation to the nearest in-water sensor. Nine measurements became more than a hundred once I added lags and rolling averages. Temperature. Salinity. Dissolved oxygen. Wind. I trained a gradient-boosted model on the full feature set. Yet all that complexity did little to sharpen the forecast.</p>
-      <p>The strongest signal came from the water&rsquo;s own recent history. Chlorophyll from twelve hours earlier beat every weather variable, cutting my prediction error in half. In a system this noisy, that looked too good to trust. After weeks of shuffling labels I found the problem. The short lag was leaking future readings into the prediction. Like the subtle twitch that separates a bite from the current, the difference was small but vital. I went back to a longer lag, gave up accuracy, and kept a result I believed, one that held on a station the model had never seen. It became my first peer-reviewed publication.</p>
+      <p>I found a way to listen closer and began exploring the problem through data science and artificial intelligence. Researchers have long worked to forecast harmful algal blooms, and I hoped to contribute to that effort. Using satellite observations, water-quality sensor data, and field samples, I trained a gradient-boosted model to pick out the conditions that build toward a bloom. A spike in chlorophyll here, a rise in temperature there, quiet cues not so different from the ones I once watched for on the water. The model showed the potential to forecast blooms several days in advance, which could give communities more time to prepare and respond. That work led to my first peer-reviewed publication, a small contribution to a large problem.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-mood="depths">
+    <div class="wrap plate rv">
+      <p>Research feels familiar. There are long stretches where nothing seems to work, blind alleys, predictions that fail, data that refuses to cooperate. At one point it took me over a month to reconcile satellite readings that disagreed with the sensors in the water. It felt like untangling a snarled fishing line. I have learned to sit with it, to adjust, recalibrate, and try again, patiently looking for what&rsquo;s hidden in the depths.</p>
     </div>
   </section>
 
@@ -280,9 +288,9 @@ blockquote .attr{
 
   <section class="closing" data-mood="closing">
     <div class="wrap rv">
-      <p>My grandfather is gone, but I carry his patience and his instinct to linger and listen.</p>
+      <p>My grandfather is gone now. But his lesson was never really about fishing. It was about how to wait, how to listen, how to pay attention, and how to keep searching when answers do not come easily.</p>
       <div class="rule"></div>
-      <p>I am still the kid at the edge of the foggy pond, watching for what the water might reveal next.</p>
+      <p>I&rsquo;m still the kid at that foggy pond, and I carry my grandfather&rsquo;s silent lessons to every pond, every dataset, every day, exploring the natural world that has not finished speaking.</p>
     </div>
   </section>
 
@@ -322,7 +330,7 @@ function rgb(c){return `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;}
 function mix(c1,c2,t){return [lerp(c1[0],c2[0],t), lerp(c1[1],c2[1],t), lerp(c1[2],c2[2],t)];}
 
 let trees = [], reeds = [], fogBands = [], dragonflies = [], ripples = [], wakes = [],
-    minnowBursts = [], motes = [], deadFish = [], dataPts = [], dataCurve = [], net = null;
+    minnowBursts = [], motes = [], deadFish = [], dataPts = [], dataCurve = [], net = null, charts = [];
 
 const PAL = {
   skyTop:   [[18,25,38],   [104,142,176]],
@@ -339,21 +347,25 @@ let dawn = 0, dawnEased = 0;
    Each beat of the essay sets these targets and the pond eases toward
    them, so what you are reading is what the water is doing.          */
 const MOODS = {
-  dawn:      { fog:1.00, tide:0, data:0, dragon:0.60, warm:0.00, cool:0.00, cast:"none",
+  dawn:      { fog:1.00, tide:0, data:0, bless:0, dragon:0.60, warm:0.00, cool:0.00, cast:"none",
                dimple:1.0, rise:0.6, wake:0.30, minnow:0.4 },
-  fog:       { fog:1.45, tide:0, data:0, dragon:0.45, warm:0.00, cool:0.05, cast:"kid",
+  fog:       { fog:1.45, tide:0, data:0, bless:0, dragon:1.30, warm:0.00, cool:0.05, cast:"kid",
                dimple:1.3, rise:0.5, wake:0.20, minnow:0.3 },
-  signs:     { fog:1.00, tide:0, data:0, dragon:1.00, warm:0.10, cool:0.00, cast:"pair",
+  pair:      { fog:1.12, tide:0, data:0, bless:0, dragon:0.85, warm:0.04, cool:0.00, cast:"pair",
+               dimple:1.4, rise:0.9, wake:0.45, minnow:0.7 },
+  signs:     { fog:1.00, tide:0, data:0, bless:0, dragon:1.00, warm:0.10, cool:0.00, cast:"pair",
                dimple:3.4, rise:2.6, wake:2.6, minnow:2.8 },
-  guidebook: { fog:0.78, tide:0, data:0, dragon:1.00, warm:0.42, cool:0.00, cast:"kid",
+  guidebook: { fog:0.78, tide:0, data:0, bless:0, dragon:1.00, warm:0.42, cool:0.00, cast:"kid",
                dimple:1.2, rise:1.0, wake:0.40, minnow:0.5 },
-  redtide:   { fog:1.15, tide:1, data:0, dragon:0.00, warm:0.00, cool:0.00, cast:"none",
+  redtide:   { fog:1.15, tide:1, data:0, bless:0, dragon:0.00, warm:0.00, cool:0.00, cast:"none",
                dimple:0.15, rise:0.0, wake:0.0, minnow:0.0 },
-  data:      { fog:0.62, tide:0, data:1, dragon:0.30, warm:0.00, cool:0.45, cast:"none",
+  data:      { fog:0.62, tide:0, data:1, bless:0, dragon:0.30, warm:0.00, cool:0.45, cast:"none",
                dimple:0.8, rise:0.5, wake:0.30, minnow:0.4 },
-  camp:      { fog:0.50, tide:0, data:0, dragon:1.25, warm:0.52, cool:0.00, cast:"mentor",
+  depths:    { fog:0.95, tide:0, data:0.30, bless:0, dragon:0.25, warm:0.00, cool:0.34, cast:"none",
+               dimple:0.5, rise:0.3, wake:1.1, minnow:0.3 },
+  camp:      { fog:0.50, tide:0, data:0, bless:0, dragon:1.25, warm:0.52, cool:0.00, cast:"mentor",
                dimple:2.0, rise:1.6, wake:3.0, minnow:1.6 },
-  closing:   { fog:0.34, tide:0, data:0, dragon:1.00, warm:0.66, cool:0.00, cast:"one",
+  closing:   { fog:0.34, tide:0, data:0, bless:1, dragon:1.00, warm:0.66, cool:0.00, cast:"one",
                dimple:1.2, rise:1.0, wake:0.80, minnow:0.6 }
 };
 /* live interpolated state + the cast fade weights */
@@ -486,6 +498,21 @@ function buildScene(){
     const p = i/48;
     dataCurve.push(0.5 + Math.sin(p*7.1)*0.22 + Math.sin(p*17.3)*0.09 + Math.sin(p*3.1)*0.13);
   }
+
+  /* the readouts he lived in for a winter, hung across the sky */
+  const pw = W < 640 ? W*0.385 : W*0.295;
+  const ph = H*0.132;
+  const bars = [], line = [], scat = [], cells = [];
+  for (let i=0;i<9;i++)  bars.push(0.18 + rnd()*0.82);
+  for (let i=0;i<26;i++) line.push(0.5 + Math.sin(i*0.55)*0.26 + (rnd()-0.5)*0.22);
+  for (let i=0;i<34;i++){ const sx = rnd(); scat.push({ x:sx, y: clamp(0.16 + sx*0.66 + (rnd()-0.5)*0.34, 0.02, 0.98) }); }
+  for (let i=0;i<36;i++) cells.push(rnd());
+  charts = [
+    { type:"bars",    x:W*0.055, y:H*0.050, w:pw, h:ph, d:bars },
+    { type:"line",    x:W*0.560, y:H*0.050, w:pw, h:ph, d:line },
+    { type:"matrix",  x:W*0.055, y:H*0.415, w:pw, h:ph, d:cells, n:6 },
+    { type:"scatter", x:W*0.560, y:H*0.415, w:pw, h:ph, d:scat }
+  ];
 
   /* the network he trained, laid over the morning */
   net = { layers: [], edges: [] };
@@ -760,6 +787,86 @@ function drawDeadFish(time){
   }
 }
 
+/* Charts hung in the sky for the winter he spent inside the data.
+   Cyan for what he measured, gold for the result that was too good to be true. */
+function drawCharts(time){
+  if (M.data < 0.01 || !charts.length) return;
+  const a = M.data;
+  const ink   = (o)=> `rgba(196,228,244,${o*a})`;
+  const glow  = (o)=> `rgba(150,214,240,${o*a})`;
+  const gold  = (o)=> `rgba(232,200,147,${o*a})`;
+
+  for (const c of charts){
+    const {x, y, w, h} = c;
+
+    /* axes: just an L, plus a few ticks, so it reads as a plot */
+    ctx.strokeStyle = ink(0.34); ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y); ctx.lineTo(x, y+h); ctx.lineTo(x+w, y+h);
+    ctx.stroke();
+    ctx.strokeStyle = ink(0.16);
+    for (let i=1;i<=3;i++){
+      const gy = y + h*(1 - i/4);
+      ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x+w, gy); ctx.stroke();
+    }
+
+    if (c.type === "bars"){
+      const bw = w/(c.d.length*1.55);
+      c.d.forEach((v,i)=>{
+        const bh = h * v * (0.86 + 0.14*Math.sin(time*1.1 + i*0.7));
+        const bx = x + w*(i+0.5)/c.d.length - bw/2;
+        const g = ctx.createLinearGradient(0, y+h-bh, 0, y+h);
+        g.addColorStop(0, glow(0.72)); g.addColorStop(1, glow(0.16));
+        ctx.fillStyle = g;
+        ctx.fillRect(bx, y+h-bh, bw, bh);
+      });
+    }
+
+    else if (c.type === "line"){
+      const px = i => x + w*i/(c.d.length-1);
+      const py = i => y + h*(1 - c.d[i]);
+      ctx.beginPath(); ctx.moveTo(px(0), y+h);
+      for (let i=0;i<c.d.length;i++) ctx.lineTo(px(i), py(i));
+      ctx.lineTo(px(c.d.length-1), y+h); ctx.closePath();
+      const g = ctx.createLinearGradient(0, y, 0, y+h);
+      g.addColorStop(0, glow(0.30)); g.addColorStop(1, "rgba(150,214,240,0)");
+      ctx.fillStyle = g; ctx.fill();
+      ctx.strokeStyle = ink(0.85); ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      for (let i=0;i<c.d.length;i++) i ? ctx.lineTo(px(i), py(i)) : ctx.moveTo(px(i), py(i));
+      ctx.stroke();
+      /* a marker running along the series */
+      const t = (time*0.10) % 1, idx = Math.min(c.d.length-1, Math.floor(t*(c.d.length-1)));
+      ctx.fillStyle = gold(0.95);
+      ctx.beginPath(); ctx.arc(px(idx), py(idx), 2.6, 0, Math.PI*2); ctx.fill();
+    }
+
+    else if (c.type === "matrix"){
+      const n = c.n, cw = w/n, chh = h/n;
+      c.d.forEach((v,i)=>{
+        const cx = i % n, cy = (i/n)|0;
+        const pulse = 0.72 + 0.28*Math.sin(time*0.8 + i*0.35);
+        ctx.fillStyle = (cx === cy) ? gold(0.55*pulse) : glow(0.10 + 0.62*v*pulse);
+        ctx.fillRect(x + cx*cw + 1, y + cy*chh + 1, cw-2, chh-2);
+      });
+    }
+
+    else if (c.type === "scatter"){
+      c.d.forEach((p,i)=>{
+        const tw = 0.55 + 0.45*Math.sin(time*1.3 + i*0.9);
+        ctx.fillStyle = glow(0.80*tw);
+        ctx.beginPath(); ctx.arc(x + w*p.x, y + h*(1-p.y), 1.9, 0, Math.PI*2); ctx.fill();
+      });
+      /* the fit through them */
+      ctx.setLineDash([4,4]); ctx.strokeStyle = gold(0.72); ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x, y + h*(1-0.16));
+      ctx.lineTo(x+w, y + h*(1-0.82));
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+}
+
 function drawNetwork(time){
   if (M.data < 0.01 || !net) return;
   const a = M.data;
@@ -973,6 +1080,13 @@ const FIG = {
            waistHalf:0.082, hipY:0.497, hipHalf:0.090, kneeY:0.258, ankleY:0.041,
            thighW:0.077, calfW:0.052, footW:0.029, armW:0.045, foreW:0.035,
            grip:[0.158,0.615], elbow:[0.114,0.668] },
+  /* the grandfather: a big, heavy-set man — broad through the chest, thick
+     through the waist, and a little shorter than he once was */
+  elder: { heads:7.0,  headR:0.072, headRx:0.061, headCy:0.928, neckHalf:0.038, neckTop:0.846,
+           shoulderY:0.812, shoulderHalf:0.128, chestY:0.732, chestHalf:0.124, waistY:0.598,
+           waistHalf:0.121, hipY:0.492, hipHalf:0.116, kneeY:0.262, ankleY:0.040,
+           thighW:0.098, calfW:0.066, footW:0.032, armW:0.056, foreW:0.044,
+           grip:[0.184,0.632], elbow:[0.132,0.690], belly:true },
   adult: { heads:7.5,  headR:0.067, headRx:0.056, headCy:0.933, neckHalf:0.031, neckTop:0.856,
            shoulderY:0.822, shoulderHalf:0.110, chestY:0.745, chestHalf:0.100, waistY:0.606,
            waistHalf:0.078, hipY:0.495, hipHalf:0.094, kneeY:0.265, ankleY:0.040,
@@ -1031,6 +1145,12 @@ function composeBody(g, p, opts){
   g.bezierCurveTo(p.shoulderHalf, p.shoulderY-0.040, p.chestHalf, p.chestY+0.035, p.chestHalf, p.chestY);
   g.bezierCurveTo(p.chestHalf, p.chestY-0.035, p.waistHalf+0.006, p.waistY-0.02, p.hipHalf, p.hipY);
   g.closePath(); g.fill();
+
+  /* the weight he carries at the middle */
+  if (p.belly){
+    addOval(g, 0.022, p.waistY - 0.012, p.waistHalf*1.06, 0.098);
+    addOval(g, 0.010, p.chestY - 0.030, p.chestHalf*0.98, 0.072);
+  }
 
   /* the grandfather's coat: a little extra bulk that falls past the hip */
   if (opts.coat){
@@ -1131,7 +1251,7 @@ function drawCast(time){
   drawAngler(W*0.14, at(W*0.14), H*0.170, {kind:"child", rod:1.62, child:true}, time, castW.kid);
   /* the same boy, and his grandfather a few feet down the bank */
   drawAngler(W*0.13, at(W*0.13), H*0.165, {kind:"child", rod:1.62, child:true}, time, castW.pair);
-  drawAngler(W*0.34, at(W*0.34), H*0.255, {kind:"adult", rod:1.05, hat:true, coat:true}, time, castW.pair);
+  drawAngler(W*0.34, at(W*0.34), H*0.250, {kind:"elder", rod:1.05, hat:true, coat:true}, time, castW.pair);
   /* now he is the tall one, a few feet down the bank from a nine-year-old */
   drawAngler(W*0.13, at(W*0.13), H*0.245, {kind:"adult", rod:1.05}, time, castW.mentor);
   drawAngler(W*0.35, at(W*0.35), H*0.180, {kind:"youth", rod:1.55, child:true}, time, castW.mentor);
@@ -1167,6 +1287,81 @@ function drawFog(time){
   ctx.fillRect(0, HORIZON-H*0.09, W, H*0.22);
 }
 
+/* He is gone, so he is not a figure on the bank any more — he is the shape
+   the clouds make when the light comes up, watching, and glad. Kept soft and
+   warm and low-contrast so it reads as weather that happens to look like him. */
+function drawBlessing(time){
+  const a = M.bless;
+  if (a < 0.01) return;
+  const s = Math.min(W, H) * 0.170;
+  const cx = W*0.50, cy = H*0.175 + Math.sin(time*0.18)*s*0.03;
+  const light = (o)=> `rgba(255,238,208,${o*a})`;
+  const feat  = (o)=> `rgba(196,158,112,${o*a})`;
+
+  ctx.save();
+
+  /* the blessing itself: soft light spilling down toward the water */
+  ctx.filter = "blur(18px)";
+  for (let i=-2;i<=2;i++){
+    const sway = Math.sin(time*0.22 + i)*s*0.06;
+    const g = ctx.createLinearGradient(cx, cy + s*0.8, cx + i*s*0.5, HORIZON);
+    g.addColorStop(0, light(0.16));
+    g.addColorStop(1, "rgba(255,238,208,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(cx - s*0.10, cy + s*0.75);
+    ctx.lineTo(cx + i*s*0.62 - s*0.30 + sway, HORIZON);
+    ctx.lineTo(cx + i*s*0.62 + s*0.30 + sway, HORIZON);
+    ctx.lineTo(cx + s*0.10, cy + s*0.75);
+    ctx.closePath(); ctx.fill();
+  }
+
+  /* the cloud mass that makes his face and his hat */
+  ctx.filter = "blur(9px)";
+  ctx.fillStyle = light(0.26);
+  ctx.beginPath(); ctx.ellipse(cx, cy, s*0.66, s*0.76, 0, 0, Math.PI*2); ctx.fill();          /* head */
+  ctx.beginPath(); ctx.ellipse(cx, cy - s*0.66, s*1.36, s*0.17, -0.03, 0, Math.PI*2); ctx.fill(); /* brim */
+  ctx.beginPath(); ctx.ellipse(cx, cy - s*0.98, s*0.62, s*0.30, -0.02, 0, Math.PI*2); ctx.fill(); /* crown */
+  ctx.fillStyle = light(0.13);
+  ctx.beginPath(); ctx.ellipse(cx, cy + s*0.86, s*1.05, s*0.34, 0, 0, Math.PI*2); ctx.fill();  /* shoulders */
+
+  /* the face: eyes closed and creased, and a smile */
+  ctx.filter = "blur(2.6px)";
+  ctx.strokeStyle = feat(0.62); ctx.lineWidth = Math.max(1.6, s*0.045); ctx.lineCap = "round";
+  for (const side of [-1, 1]){
+    ctx.beginPath();
+    ctx.arc(cx + side*s*0.27, cy - s*0.04, s*0.17, Math.PI*1.12, Math.PI*1.88);
+    ctx.stroke();
+    /* the crease at the corner of the eye of a man who smiled a lot */
+    ctx.beginPath();
+    ctx.moveTo(cx + side*s*0.48, cy - s*0.10);
+    ctx.lineTo(cx + side*s*0.58, cy - s*0.16);
+    ctx.stroke();
+  }
+  ctx.lineWidth = Math.max(1.8, s*0.052);
+  ctx.beginPath();
+  ctx.arc(cx, cy + s*0.10, s*0.34, Math.PI*0.22, Math.PI*0.78);
+  ctx.stroke();
+  /* a moustache, the way he wore it */
+  ctx.lineWidth = Math.max(1.5, s*0.060); ctx.strokeStyle = feat(0.40);
+  ctx.beginPath();
+  ctx.arc(cx, cy + s*0.02, s*0.24, Math.PI*0.30, Math.PI*0.70);
+  ctx.stroke();
+
+  ctx.restore();
+
+  /* motes of light drifting down from him */
+  ctx.save();
+  for (let i=0;i<14;i++){
+    const t = ((time*0.055) + i/14) % 1;
+    const mx = cx + Math.sin(i*2.7 + time*0.20)*s*(0.5 + t*2.6);
+    const my = cy + s*0.9 + t*(HORIZON - cy - s*0.9);
+    ctx.fillStyle = light(0.42*Math.sin(t*Math.PI));
+    ctx.beginPath(); ctx.arc(mx, my, 1.5 + Math.sin(i)*0.6, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawMotes(time){
   for (const f of motes){
     f.y -= f.s * (1/60) * 10;
@@ -1180,7 +1375,7 @@ function drawMotes(time){
 }
 
 /* ---------- the four signs, demonstrated in order while you read them ---------- */
-const signEls = [...document.querySelectorAll("#signs li")];
+const signEls = [...document.querySelectorAll("#signsText .cue")];
 let signTimer = 0, signIdx = -1;
 function cycleSigns(dt){
   const active = moodKey === "signs";
@@ -1193,11 +1388,14 @@ function cycleSigns(dt){
     signIdx = (signIdx + 1) % signEls.length;
     signEls.forEach((e,i)=> e.classList.toggle("live", i === signIdx));
     const sign = signEls[signIdx].dataset.sign;
-    if (sign === "dimple"){ spawnRipple("dimple"); spawnRipple("dimple"); }
-    if (sign === "rise")  { spawnRipple("rise"); }
-    if (sign === "minnow"){ spawnMinnows(); }
-    if (sign === "wake")  { spawnWake(); }
-    signTimer = 3.6;
+    if (sign === "rise"){ spawnRipple("rise"); }
+    if (sign === "wake"){ spawnWake(); spawnMinnows(); }
+    if (sign === "wind"){                       /* a gust crossing the whole pond */
+      for (let i=0;i<5;i++) spawnRipple("dimple");
+      for (const f of fogBands) f.drift *= 1.9;
+      setTimeout(()=>{ for (const f of fogBands) f.drift /= 1.9; }, 2600);
+    }
+    signTimer = 4.2;
   }
 }
 
@@ -1231,6 +1429,7 @@ function frame(now){
   drawReeds(time*0.55, true);
   drawShimmer(time);
   drawDataOverlay(time);
+  drawCharts(time);
   drawNetwork(time);
   drawRipples(dt);
   drawWakes(dt);
@@ -1238,6 +1437,7 @@ function frame(now){
   drawDeadFish(time);
   drawReeds(time, false, 0.35, 1.0);     /* reeds out in the pond, softened by fog */
   drawFog(time);
+  drawBlessing(time);
   drawBank();
   drawCast(time);
   drawReeds(time, false, -1, 0.35);      /* reeds on the near bank, crisp and in front */
@@ -1275,9 +1475,11 @@ const Sound = (() => {
     dawn:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     fog:       { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     signs:     { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
+    pair:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     guidebook: { nature:1.00, bird:0.90, om:0, tk:0, sn:0 },
     redtide:   { nature:0.18, bird:0.00, om:1.00, tk:0, sn:0 },   /* the birds stop */
     data:      { nature:0.10, bird:0.00, om:0.10, tk:1.00, sn:0 },
+    depths:    { nature:0.62, bird:0.28, om:0.28, tk:0.30, sn:0 }, /* the machine receding */
     camp:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },      /* back to the pond */
     closing:   { nature:0.75, bird:0.55, om:0, tk:0, sn:1.00 }
   };
