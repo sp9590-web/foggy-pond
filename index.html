@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Fishing, Not Catching</title>
+<style>
+:root{
+  --ink:#f1ece4;
+  --ink-soft:#cfc7bb;
+  --ink-dim:#a79f95;
+  --gold:#e8c893;
+  --serif: "Iowan Old Style","Palatino Linotype","Palatino","Book Antiqua","Georgia",serif;
+  --sans: ui-sans-serif,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#0d1218;color:var(--ink)}
+body{font-family:var(--serif); -webkit-font-smoothing:antialiased; overflow-x:hidden}
+
+#scene{position:fixed; inset:0; width:100vw; height:100vh; display:block; z-index:0}
+#grain{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  opacity:.055; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+}
+#vignette{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse 120% 85% at 50% 45%, rgba(0,0,0,0) 40%, rgba(8,10,14,.55) 100%);
+}
+
+main{position:relative; z-index:2}
+.wrap{max-width:41rem; margin:0 auto; padding:0 1.6rem}
+
+section.hero{
+  height:100svh; min-height:520px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; position:relative;
+}
+.kicker{
+  font-family:var(--sans); font-size:.68rem; letter-spacing:.42em; text-transform:uppercase;
+  color:var(--ink-dim); margin-bottom:1.6rem; opacity:0; animation:rise 2.4s .5s forwards cubic-bezier(.2,.7,.2,1);
+}
+h1{
+  font-weight:400; font-size:clamp(2.7rem,8.5vw,5.1rem); line-height:1.02;
+  margin:0 0 1.5rem; letter-spacing:-.015em;
+  text-shadow:0 2px 40px rgba(10,14,20,.65), 0 1px 3px rgba(10,14,20,.5);
+  opacity:0; animation:rise 2.6s .9s forwards cubic-bezier(.2,.7,.2,1);
+}
+h1 em{font-style:italic; color:var(--gold)}
+.dek{
+  font-size:clamp(1rem,2.6vw,1.18rem); color:var(--ink-soft); font-style:italic;
+  max-width:26rem; line-height:1.65; margin:0;
+  text-shadow:0 1px 16px rgba(10,14,20,.7);
+  opacity:0; animation:rise 2.6s 1.4s forwards cubic-bezier(.2,.7,.2,1);
+}
+.scrollcue{
+  position:absolute; bottom:2.4rem; left:50%; transform:translateX(-50%);
+  font-family:var(--sans); font-size:.6rem; letter-spacing:.34em; text-transform:uppercase;
+  color:var(--ink-dim); opacity:0; animation:rise 2s 2.4s forwards, bob 3.4s 3s infinite ease-in-out;
+}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
+
+.beat{padding:14vh 0}
+.beat p{
+  font-size:clamp(1.12rem,2.9vw,1.34rem); line-height:1.85; color:var(--ink);
+  margin:0 0 1.5rem; text-shadow:0 1px 22px rgba(9,12,17,.85), 0 1px 4px rgba(9,12,17,.6);
+}
+.beat p:last-child{margin-bottom:0}
+.beat .lede::first-letter{
+  font-size:3.2em; float:left; line-height:.82; padding:.06em .12em 0 0; color:var(--gold); font-style:italic;
+}
+.plate{
+  position:relative; border-radius:2px; padding:2.2rem 2rem;
+  background:linear-gradient(180deg, rgba(10,14,20,0) 0%, rgba(10,14,20,.34) 12%, rgba(10,14,20,.40) 88%, rgba(10,14,20,0) 100%);
+  backdrop-filter:blur(2.5px); -webkit-backdrop-filter:blur(2.5px);
+}
+blockquote{
+  margin:2.5rem 0; padding:0 0 0 1.6rem; border-left:1px solid rgba(232,200,147,.42);
+  font-size:clamp(1.24rem,3.4vw,1.62rem); line-height:1.6; font-style:italic; color:var(--gold);
+  text-shadow:0 1px 22px rgba(9,12,17,.9);
+}
+blockquote .attr{
+  display:block; margin-top:1rem; font-family:var(--sans); font-style:normal;
+  font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-dim);
+}
+.signs{list-style:none; margin:2rem 0 0; padding:0}
+.signs li{
+  font-size:clamp(1rem,2.6vw,1.12rem); line-height:1.6; padding:.7rem 0 .7rem 1.5rem;
+  border-bottom:1px solid rgba(241,236,228,.09); position:relative; color:var(--ink-soft);
+  text-shadow:0 1px 18px rgba(9,12,17,.8);
+  transition:color .9s ease;
+}
+.signs li:before{content:"~"; position:absolute; left:0; color:var(--gold); opacity:.65; transition:opacity .9s ease}
+.signs li b{color:var(--ink); font-weight:400; font-style:italic}
+/* the sign the pond is currently showing you */
+.signs li.live{color:var(--ink)}
+.signs li.live:before{opacity:1; text-shadow:0 0 14px rgba(232,200,147,.9)}
+
+.closing{text-align:center; padding:20vh 0 26vh}
+.closing p{
+  font-size:clamp(1.3rem,4vw,1.8rem); line-height:1.6; font-style:italic; color:var(--ink);
+  text-shadow:0 1px 30px rgba(9,12,17,.9);
+}
+.rule{width:44px; height:1px; background:rgba(232,200,147,.5); margin:3.2rem auto}
+.colophon{
+  font-family:var(--sans); font-size:.62rem; letter-spacing:.28em; text-transform:uppercase;
+  color:rgba(167,159,149,.6); text-align:center; padding-bottom:5rem;
+}
+.rv{opacity:0; transform:translateY(26px); transition:opacity 1.5s cubic-bezier(.2,.7,.2,1), transform 1.5s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1; transform:none}
+
+#gate{
+  position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(ellipse at 50% 55%, rgba(16,21,28,.72), rgba(8,11,15,.94));
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  transition:opacity 1.4s ease, visibility 1.4s; cursor:pointer; text-align:center;
+}
+#gate.gone{opacity:0; visibility:hidden}
+#gate .g-inner{padding:2rem 1.5rem; max-width:26rem}
+#gate .g-title{font-size:clamp(1.4rem,5vw,2rem); margin:0 0 1rem; font-style:italic; color:var(--gold); line-height:1.25}
+#gate .g-lead{
+  font-size:clamp(.98rem,3.4vw,1.06rem); line-height:1.65; color:var(--ink-soft); margin:0 auto; max-width:22rem;
+}
+#gate .g-btn{
+  margin:2.1rem auto 0; display:flex; align-items:center; justify-content:center;
+  min-height:58px; padding:0 2.4rem; border:1px solid rgba(232,200,147,.55);
+  border-radius:999px; font-family:var(--sans); font-size:.78rem; letter-spacing:.26em; text-transform:uppercase;
+  color:var(--gold); background:rgba(232,200,147,.06);
+  transition:background .4s, border-color .4s, transform .25s;
+  animation:pulse 3.4s ease-in-out infinite;
+}
+#gate:hover .g-btn{background:rgba(232,200,147,.14); border-color:rgba(232,200,147,.9)}
+#gate .g-btn:active{transform:scale(.97)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,200,147,.22)}50%{box-shadow:0 0 0 14px rgba(232,200,147,0)}}
+#gate .g-how{
+  margin:1.6rem auto 0; font-family:var(--sans); font-size:.72rem; line-height:1.9;
+  color:rgba(207,199,187,.72); display:flex; flex-direction:column; gap:.1rem;
+}
+#gate .g-how .g-ring{color:rgba(167,159,149,.6); font-size:.68rem; margin-top:.5rem}
+#gate .g-quiet{
+  margin:1.6rem auto 0; display:inline-block; padding:.7rem 1rem; min-height:44px; line-height:30px;
+  font-family:var(--sans); font-size:.7rem; letter-spacing:.14em; color:rgba(167,159,149,.7);
+  text-decoration:underline; text-underline-offset:5px;
+}
+
+/* the one-time coach mark after you start */
+#hint{
+  position:fixed; z-index:13; left:50%; transform:translate(-50%,14px);
+  bottom:calc(1.7rem + env(safe-area-inset-bottom, 0px)); max-width:min(22rem, calc(100vw - 8.5rem));
+  padding:.7rem 1.1rem; border-radius:999px; text-align:center;
+  background:rgba(12,16,22,.66); border:1px solid rgba(241,236,228,.14);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  font-family:var(--sans); font-size:.7rem; letter-spacing:.06em; color:var(--ink-soft);
+  opacity:0; pointer-events:none; transition:opacity 1s ease, transform 1s ease;
+}
+#hint.show{opacity:1; transform:translate(-50%,0)}
+
+#sound, #guide{
+  position:fixed; z-index:12; bottom:calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  width:52px; height:52px; border-radius:999px; cursor:pointer; padding:0;
+  border:1px solid rgba(241,236,228,.22); background:rgba(12,16,22,.42);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .4s, background .4s, opacity .8s;
+  opacity:0; pointer-events:none;
+  -webkit-tap-highlight-color:transparent;
+}
+#sound{right:calc(1.5rem + env(safe-area-inset-right, 0px))}
+#guide{left:calc(1.5rem + env(safe-area-inset-left, 0px))}
+#sound.show, #guide.show{opacity:1; pointer-events:auto}
+#sound:hover, #guide:hover{border-color:rgba(232,200,147,.7); background:rgba(232,200,147,.10)}
+#guide svg{fill:var(--gold)}
+#guide .g-play{display:none}
+#guide.paused .g-play{display:block}
+#guide.paused .g-pause{display:none}
+#guide.paused{border-color:rgba(232,200,147,.55)}
+#sound .bar{display:block; width:2px; height:9px; margin:0 1.5px; background:var(--gold); border-radius:2px}
+#sound.on .bar{animation:eq 1.6s infinite ease-in-out}
+#sound .bar:nth-child(2){animation-delay:.25s}
+#sound .bar:nth-child(3){animation-delay:.5s}
+#sound .bar:nth-child(4){animation-delay:.15s}
+#sound.off .bar{height:9px; opacity:.40}
+@keyframes eq{0%,100%{height:5px}50%{height:17px}}
+
+@media (max-width:560px){
+  #sound, #guide{bottom:calc(1.1rem + env(safe-area-inset-bottom, 0px)); width:50px; height:50px}
+  #sound{right:calc(1.1rem + env(safe-area-inset-right, 0px))}
+  #guide{left:calc(1.1rem + env(safe-area-inset-left, 0px))}
+  #hint{bottom:calc(1.3rem + env(safe-area-inset-bottom, 0px)); font-size:.66rem; padding:.62rem .85rem}
+  .wrap{padding:0 1.15rem}
+  .plate{padding:1.7rem 1.15rem}
+  .beat{padding:11vh 0}
+  .closing{padding:16vh 0 22vh}
+  blockquote{padding-left:1.1rem; margin:2rem 0}
+  .colophon{padding-bottom:7rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .rv{transition:none; opacity:1; transform:none}
+  .kicker,h1,.dek,.scrollcue{animation:none; opacity:1}
+}
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+<div id="vignette"></div>
+<div id="grain"></div>
+
+<button id="sound" class="off" aria-label="Turn the wood thrush and pond sound on or off">
+  <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+</button>
+<button id="guide" class="playing" aria-label="Pause or resume the story moving on its own">
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <rect class="g-pause" x="8"  y="5" width="3.2" height="14" rx="1.2"/>
+    <rect class="g-pause" x="13" y="5" width="3.2" height="14" rx="1.2"/>
+    <path class="g-play" d="M8 5.2 L19 12 L8 18.8 Z"/>
+  </svg>
+</button>
+
+<main>
+  <section class="hero" data-mood="dawn">
+    <div class="wrap">
+      <div class="kicker">A Morning at the Water's Edge</div>
+      <h1>Fishing,<br><em>Not Catching</em></h1>
+      <p class="dek">The fog came in low, as if the pond were exhaling.</p>
+    </div>
+    <div class="scrollcue">Scroll</div>
+  </section>
+
+  <section class="beat" data-mood="fog">
+    <div class="wrap plate rv">
+      <p class="lede">The fog came in low, as if the pond were exhaling. Somewhere in the shrouded trees, a wood thrush welcomed the dawn with its flute-like song. I was five, with a fishing rod taller than me. Nothing bit. Yet the pond was speaking in signs I had not yet learned to read. That morning is my earliest memory of learning to pay attention, a habit I have carried far beyond that pond.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-mood="signs">
+    <div class="wrap plate rv">
+      <p>My grandfather stood a few feet down the bank. He noticed everything and announced nothing. I learned it the way you learn a language, by being near it.</p>
+      <ul class="signs" id="signs">
+        <li data-sign="dimple">A dimple meant <b>an insect had landed.</b></li>
+        <li data-sign="rise">Widening rings meant <b>a bluegill had risen to eat it.</b></li>
+        <li data-sign="minnow">Minnows scattering toward shore meant <b>something larger beneath.</b></li>
+        <li data-sign="wake">A dark patch moving against the current <b>was not a shadow.</b></li>
+      </ul>
+      <p style="margin-top:2rem">The pond was gossiping all morning, and I was learning the words.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-mood="guidebook">
+    <div class="wrap plate rv">
+      <p>At fourteen, I put what I had learned into a fishing guidebook. No teacher had assigned it. It had chapters and photographs, with a dedication page for my grandfather. Libraries near home still shelve it. My own copy has a water stain on the cover. I wrote:</p>
+      <blockquote>
+        &ldquo;I have spent countless hours waiting for a bite. Many times I have been unsuccessful in catching what I was looking for, but, over time, I have learned that it&rsquo;s about fishing and not catching.&rdquo;
+        <span class="attr">Age Fourteen &middot; Chapter One</span>
+      </blockquote>
+      <p>Its pages were about lures and bait, but underneath, I now realize, was a field guide to attention.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-mood="redtide">
+    <div class="wrap plate rv">
+      <p>The winter I was fifteen, a red tide moved through the Gulf Coast and turned water I had fished for years toxic. Fish floated belly-up by the thousands. The trouble had started long before it became visible. For the first time, the water needed something back from me. Wanting to understand the hidden mechanics behind the collapse, I turned to data.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-mood="data">
+    <div class="wrap plate rv">
+      <p>Research, I discovered, was fishing in another form. Satellite observations were public but difficult to retrieve in bulk, so I wrote a program to scrape them and match each observation to the nearest in-water sensor. Nine measurements became more than a hundred once I added lags and rolling averages. Temperature. Salinity. Dissolved oxygen. Wind. I trained a gradient-boosted model on the full feature set. Yet all that complexity did little to sharpen the forecast.</p>
+      <p>The strongest signal came from the water&rsquo;s own recent history. Chlorophyll from twelve hours earlier beat every weather variable, cutting my prediction error in half. In a system this noisy, that looked too good to trust. After weeks of shuffling labels I found the problem. The short lag was leaking future readings into the prediction. Like the subtle twitch that separates a bite from the current, the difference was small but vital. I went back to a longer lag, gave up accuracy, and kept a result I believed, one that held on a station the model had never seen. It became my first peer-reviewed publication.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-mood="camp">
+    <div class="wrap plate rv">
+      <p>I have gone back to the same fishing camp for eleven straight summers, moving from camper to counselor-in-training to counselor. The clues there are the same, ripples and insects, except now I am the one a few feet down the bank.</p>
+      <p>Last summer a nine-year-old wanted to quit after a second snag. The snag was not the problem. Everyone else was catching fish, and he had decided that meant he did not belong. I re-rigged his line and let my eyes drift toward a V-shaped wake near the reeds. His gaze followed mine. He caught nothing that morning, but on the walk back he told me about the wake instead of the fish. He was beginning to discover that the stillness is not empty.</p>
+    </div>
+  </section>
+
+  <section class="closing" data-mood="closing">
+    <div class="wrap rv">
+      <p>My grandfather is gone, but I carry his patience and his instinct to linger and listen.</p>
+      <div class="rule"></div>
+      <p>I am still the kid at the edge of the foggy pond, watching for what the water might reveal next.</p>
+    </div>
+  </section>
+
+  <div class="colophon">Wood thrush &middot; dawn &middot; still water</div>
+</main>
+
+<div id="gate">
+  <div class="g-inner">
+    <p class="g-title">Somewhere in the shrouded trees&hellip;</p>
+    <p class="g-lead">A slow story about a foggy pond, a grandfather, and learning to pay attention.</p>
+    <div class="g-btn" id="startBtn">Tap to begin</div>
+    <p class="g-how">
+      <span>It moves on its own &mdash; just read.</span>
+      <span>Scroll any time to go faster.</span>
+      <span class="g-ring">Sound on &middot; on iPhone, switch off silent</span>
+    </p>
+    <div class="g-quiet" id="quiet">begin without sound</div>
+  </div>
+</div>
+
+<div id="hint">It moves on its own. Scroll any time.</div>
+
+<script>
+"use strict";
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============================================================
+   SCENE
+   ============================================================ */
+const cv = document.getElementById("scene");
+const ctx = cv.getContext("2d", { alpha: false });
+let W = 0, H = 0, DPR = 1, HORIZON = 0;
+
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+function rgb(c){return `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;}
+function mix(c1,c2,t){return [lerp(c1[0],c2[0],t), lerp(c1[1],c2[1],t), lerp(c1[2],c2[2],t)];}
+
+let trees = [], reeds = [], fogBands = [], dragonflies = [], ripples = [], wakes = [],
+    minnowBursts = [], motes = [], deadFish = [], dataPts = [], dataCurve = [];
+
+const PAL = {
+  skyTop:   [[18,25,38],   [104,142,176]],
+  skyMid:   [[52,58,80],   [196,186,190]],
+  skyLow:   [[112,96,104], [248,216,176]],
+  sun:      [[168,120,104],[255,232,196]],
+  fog:      [[196,200,206],[240,232,222]],
+  reed:     [[16,20,26],   [46,44,40]]
+};
+let dawn = 0, dawnEased = 0;
+
+/* ---------- moods: one per paragraph of the essay ----------
+   The scene is not decoration that happens to be behind the words.
+   Each beat of the essay sets these targets and the pond eases toward
+   them, so what you are reading is what the water is doing.          */
+const MOODS = {
+  dawn:      { fog:1.00, tide:0, data:0, dragon:0.60, warm:0.00, cool:0.00, cast:"none",
+               dimple:1.0, rise:0.6, wake:0.30, minnow:0.4 },
+  fog:       { fog:1.45, tide:0, data:0, dragon:0.45, warm:0.00, cool:0.05, cast:"kid",
+               dimple:1.3, rise:0.5, wake:0.20, minnow:0.3 },
+  signs:     { fog:1.00, tide:0, data:0, dragon:1.00, warm:0.10, cool:0.00, cast:"pair",
+               dimple:3.4, rise:2.6, wake:2.6, minnow:2.8 },
+  guidebook: { fog:0.78, tide:0, data:0, dragon:1.00, warm:0.42, cool:0.00, cast:"kid",
+               dimple:1.2, rise:1.0, wake:0.40, minnow:0.5 },
+  redtide:   { fog:1.15, tide:1, data:0, dragon:0.00, warm:0.00, cool:0.00, cast:"none",
+               dimple:0.15, rise:0.0, wake:0.0, minnow:0.0 },
+  data:      { fog:0.62, tide:0, data:1, dragon:0.30, warm:0.00, cool:0.45, cast:"none",
+               dimple:0.8, rise:0.5, wake:0.30, minnow:0.4 },
+  camp:      { fog:0.50, tide:0, data:0, dragon:1.25, warm:0.52, cool:0.00, cast:"mentor",
+               dimple:2.0, rise:1.6, wake:3.0, minnow:1.6 },
+  closing:   { fog:0.34, tide:0, data:0, dragon:1.00, warm:0.66, cool:0.00, cast:"one",
+               dimple:1.2, rise:1.0, wake:0.80, minnow:0.6 }
+};
+/* live interpolated state + the cast fade weights */
+let M = Object.assign({}, MOODS.dawn);
+const castW = { kid:0, pair:0, mentor:0, one:0 };
+let moodKey = "dawn";
+let sections = [];
+
+function cacheSections(){
+  sections = [...document.querySelectorAll("[data-mood]")].map(el => ({
+    el, mood: el.dataset.mood
+  }));
+}
+
+function pickMood(){
+  const mid = window.scrollY + window.innerHeight*0.42;
+  let best = null, bestD = Infinity;
+  for (const s of sections){
+    const r = s.el.getBoundingClientRect();
+    const top = r.top + window.scrollY, cy = top + r.height/2;
+    const d = Math.abs(cy - mid);
+    if (d < bestD){ bestD = d; best = s; }
+  }
+  if (best) moodKey = best.mood;
+}
+
+function easeMood(dt){
+  const t = MOODS[moodKey] || MOODS.dawn;
+  const k = Math.min(1, dt*0.9);                 /* slow, dreamlike crossfade */
+  for (const key of Object.keys(t)){
+    if (key === "cast") continue;
+    M[key] = lerp(M[key], t[key], k);
+  }
+  for (const c of Object.keys(castW)){
+    castW[c] = lerp(castW[c], t.cast === c ? 1 : 0, Math.min(1, dt*0.8));
+  }
+}
+
+function buildScene(){
+  const rnd = mulberry(20260726);
+  HORIZON = H * 0.575;
+
+  trees = [];
+  for (let ridge = 0; ridge < 2; ridge++){
+    const blobs = [];
+    const baseY = HORIZON + (ridge === 0 ? H*0.004 : H*0.012);
+    const amp   = ridge === 0 ? H*0.075 : H*0.042;
+    let x = -W*0.10;
+    while (x < W*1.10){
+      const r = W*(0.014 + Math.pow(rnd(), 1.6)*0.082);
+      const lift = amp*(0.16 + rnd()*0.90);
+      blobs.push({ x, y: baseY - lift, r });
+      const sub = 1 + Math.floor(rnd()*3);
+      for (let s=0;s<sub;s++){
+        blobs.push({ x: x + (rnd()-0.5)*r*1.5, y: baseY - lift - rnd()*r*0.55, r: r*(0.35 + rnd()*0.45) });
+      }
+      x += r * (0.62 + rnd()*0.5);
+    }
+    trees.push({ blobs, baseY, depth: ridge });
+  }
+
+  reeds = [];
+  const clumps = [
+    { x0: 0.02, x1: 0.26, n: 26, depth: 0.55 },
+    { x0: 0.70, x1: 0.99, n: 30, depth: 0.5  },
+    { x0: 0.34, x1: 0.52, n: 12, depth: 0.75 },
+    { x0:-0.04, x1: 0.16, n: 14, depth: 0.12 },
+    { x0: 0.84, x1: 1.06, n: 16, depth: 0.10 }
+  ];
+  for (const c of clumps){
+    for (let i=0;i<c.n;i++){
+      const t = rnd();
+      const depth = c.depth + (rnd()-0.5)*0.14;
+      const baseY = lerp(HORIZON + H*0.035, H*1.02, 1-clamp(depth,0,1));
+      const hgt = lerp(H*0.10, H*0.34, 1-clamp(depth,0,1)) * (0.6 + rnd()*0.75);
+      reeds.push({
+        x: W*lerp(c.x0, c.x1, t) + (rnd()-0.5)*W*0.02,
+        y: baseY, h: hgt, lean: (rnd()-0.5)*0.55,
+        w: lerp(1.0, 3.2, 1-depth) * (0.7+rnd()*0.8),
+        phase: rnd()*Math.PI*2, speed: 0.35 + rnd()*0.5,
+        depth, head: rnd() > 0.55
+      });
+    }
+  }
+  reeds.sort((a,b)=> b.depth - a.depth);
+
+  fogBands = [];
+  for (let i=0;i<9;i++){
+    fogBands.push({
+      y: HORIZON + (rnd()-0.42)*H*0.30,
+      h: H*(0.035 + rnd()*0.11), w: W*(0.5 + rnd()*0.9), x: rnd()*W,
+      drift: (rnd()<0.5?-1:1) * (2.5 + rnd()*8),
+      a: 0.10 + rnd()*0.26, phase: rnd()*Math.PI*2, bob: 4 + rnd()*14
+    });
+  }
+
+  dragonflies = [];
+  const dcount = REDUCED ? 2 : (W < 640 ? 4 : 7);
+  for (let i=0;i<dcount;i++){
+    const x = W*(0.08+rnd()*0.84), y = HORIZON + H*(0.02+rnd()*0.24);
+    dragonflies.push({ x, y, tx:x, ty:y, vx:0, vy:0, size: 0.75 + rnd()*0.85,
+                       hue: 168 + rnd()*70, wing: rnd()*Math.PI*2, pause: rnd()*2, dir: 1 });
+  }
+
+  motes = [];
+  const fcount = REDUCED ? 8 : (W < 640 ? 24 : 46);
+  for (let i=0;i<fcount;i++){
+    motes.push({ x: rnd()*W, y: rnd()*H, r: 0.5+rnd()*1.6, s: 0.15+rnd()*0.6, ph: rnd()*Math.PI*2, dx:(rnd()-0.5)*0.25 });
+  }
+
+  /* fish floating belly-up for the red tide beat */
+  deadFish = [];
+  for (let i=0;i<18;i++){
+    const d = 0.04 + rnd()*0.72;
+    deadFish.push({
+      x: W*(0.02 + rnd()*0.96), y: waterY(d), d,
+      len: lerp(5, 17, d) * (0.7+rnd()*0.7),
+      rot: (rnd()-0.5)*1.1, drift: (rnd()-0.5)*3.2,
+      bob: rnd()*Math.PI*2
+    });
+  }
+
+  /* the scatter and the two chlorophyll curves for the research beat */
+  dataPts = [];
+  for (let i=0;i<78;i++){
+    dataPts.push({ x: W*(0.04+rnd()*0.92), y: H*(0.08+rnd()*0.86), r: 0.9+rnd()*1.6, ph: rnd()*6.28 });
+  }
+  dataCurve = [];
+  for (let i=0;i<=48;i++){
+    const p = i/48;
+    dataCurve.push(0.5 + Math.sin(p*7.1)*0.22 + Math.sin(p*17.3)*0.09 + Math.sin(p*3.1)*0.13);
+  }
+
+  ripples = []; wakes = []; minnowBursts = [];
+}
+
+function resize(){
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  cv.style.width = W+"px"; cv.style.height = H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  buildScene(); cacheSections();
+}
+window.addEventListener("resize", resize, {passive:true});
+
+function waterY(depth01){ return HORIZON + (H - HORIZON) * depth01; }
+
+/* ---------- tinting: the mood recolours everything ---------- */
+function tintC(c){
+  let o = c;
+  if (M.warm > 0.002) o = mix(o, [255,206,152], M.warm*0.30);
+  if (M.cool > 0.002) o = mix(o, [146,176,208], M.cool*0.34);
+  if (M.tide > 0.002) o = mix(o, [138,58,32],  M.tide*0.52);
+  return o;
+}
+
+/* ---------- water events ---------- */
+function spawnRipple(kind){
+  const d = 0.06 + Math.random()*0.72;
+  ripples.push({
+    x: W*(0.06+Math.random()*0.88), y: waterY(d), d, r: 0,
+    max: (kind==="rise" ? 60 : 26) * (0.4 + d*1.5),
+    life: 0, dur: kind==="rise" ? 3.6 : 2.4, rings: kind==="rise" ? 3 : 1
+  });
+  if (ripples.length > 30) ripples.shift();
+}
+function spawnWake(){
+  const d = 0.10 + Math.random()*0.35;
+  const dir = Math.random()<0.5 ? 1 : -1;
+  wakes.push({ x: dir>0 ? -W*0.08 : W*1.08, y: waterY(d), d, dir, life:0, dur: 12+Math.random()*7,
+               speed: (W*0.055)*(0.5+d) });
+  if (wakes.length > 3) wakes.shift();
+}
+function spawnMinnows(){
+  const d = 0.05 + Math.random()*0.22;
+  const cx = W*(0.15+Math.random()*0.7), cy = waterY(d);
+  const fish = [];
+  for (let i=0;i<9+Math.random()*8;i++){
+    fish.push({ a: Math.random()*Math.PI*2, sp: 14+Math.random()*36, len: 3+Math.random()*5 });
+  }
+  minnowBursts.push({ cx, cy, fish, life:0, dur:2.2 });
+  if (minnowBursts.length > 4) minnowBursts.shift();
+}
+
+let nextDimple = 1.5, nextRise = 6, nextWake = 16, nextMinnow = 22;
+
+/* ---------- drawing ---------- */
+function drawSky(){
+  const t = dawnEased;
+  const g = ctx.createLinearGradient(0,0,0,HORIZON+H*0.02);
+  g.addColorStop(0,    rgb(tintC(mix(PAL.skyTop[0], PAL.skyTop[1], t))));
+  g.addColorStop(0.55, rgb(tintC(mix(PAL.skyMid[0], PAL.skyMid[1], t))));
+  g.addColorStop(1,    rgb(tintC(mix(PAL.skyLow[0], PAL.skyLow[1], t))));
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,HORIZON+H*0.02);
+
+  const sx = W*0.63, sy = HORIZON - H*(0.02 + t*0.20);
+  const rad = H*(0.28 + t*0.24);
+  const sg = ctx.createRadialGradient(sx,sy,0,sx,sy,rad);
+  const sc = tintC(mix(PAL.sun[0], PAL.sun[1], t));
+  sg.addColorStop(0,   `rgba(${sc[0]|0},${sc[1]|0},${sc[2]|0},${(0.34+0.40*t)*(1-M.tide*0.45)})`);
+  sg.addColorStop(0.45,`rgba(${sc[0]|0},${sc[1]|0},${sc[2]|0},${(0.10+0.16*t)*(1-M.tide*0.45)})`);
+  sg.addColorStop(1,   "rgba(0,0,0,0)");
+  ctx.fillStyle = sg;
+  ctx.fillRect(0,0,W,HORIZON+H*0.06);
+  return {sx, sy, rad, sc};
+}
+
+function drawTrees(){
+  for (const ridge of trees){
+    const fade = ridge.depth === 0 ? 0.30 : 0.52;
+    const c = tintC(mix([14,18,24],[42,48,46], dawnEased*0.7));
+    ctx.save();
+    ctx.filter = `blur(${ridge.depth === 0 ? 6 : 3.5}px)`;
+    ctx.fillStyle = `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${fade})`;
+    ctx.beginPath();
+    for (const b of ridge.blobs){ ctx.moveTo(b.x + b.r, b.y); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); }
+    ctx.rect(-W*0.12, ridge.baseY - H*0.012, W*1.24, H*0.03);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawWater(sun){
+  const t = dawnEased;
+  const top = tintC(mix([44,52,66],[176,168,168], t));
+  const bot = tintC(mix([12,16,22],[38,44,52], t));
+  const treeC = tintC(mix([14,18,24],[42,48,46], t*0.7));
+  const g = ctx.createLinearGradient(0,HORIZON,0,H);
+  g.addColorStop(0,    rgb(mix(treeC, top, 0.10)));
+  g.addColorStop(0.10, rgb(top));
+  g.addColorStop(0.35, rgb(mix(top,bot,0.55)));
+  g.addColorStop(1,    rgb(bot));
+  ctx.fillStyle = g; ctx.fillRect(0,HORIZON,W,H-HORIZON);
+
+  const sc = sun.sc, rows = 30;
+  for (let i=0;i<rows;i++){
+    const p = i/rows;
+    const y = HORIZON + (H-HORIZON)*p;
+    const w = W*(0.10 + p*0.44);
+    const a = (0.16 + 0.22*t) * (1-p) * (1-p*0.4) * (1-M.tide*0.6);
+    const rg = ctx.createLinearGradient(sun.sx - w/2, 0, sun.sx + w/2, 0);
+    rg.addColorStop(0,   `rgba(${sc[0]|0},${sc[1]|0},${sc[2]|0},0)`);
+    rg.addColorStop(0.5, `rgba(${sc[0]|0},${sc[1]|0},${sc[2]|0},${a})`);
+    rg.addColorStop(1,   `rgba(${sc[0]|0},${sc[1]|0},${sc[2]|0},0)`);
+    ctx.fillStyle = rg;
+    ctx.fillRect(sun.sx - w/2, y, w, (H-HORIZON)/rows + 1);
+  }
+
+  ctx.save();
+  ctx.filter = "blur(9px)";
+  ctx.fillStyle = `rgba(${treeC[0]|0},${treeC[1]|0},${treeC[2]|0},0.34)`;
+  ctx.beginPath();
+  for (const ridge of trees){
+    for (const b of ridge.blobs){
+      const my = HORIZON + (HORIZON - b.y) * 0.62;
+      ctx.moveTo(b.x + b.r, my);
+      ctx.ellipse(b.x, my, b.r, b.r*0.62, 0, 0, Math.PI*2);
+    }
+  }
+  ctx.fill();
+  ctx.restore();
+
+  /* a slick of bloom on the surface when the tide is in */
+  if (M.tide > 0.01){
+    const bg = ctx.createLinearGradient(0,HORIZON,0,H);
+    bg.addColorStop(0, `rgba(120,44,26,${0.10*M.tide})`);
+    bg.addColorStop(0.55,`rgba(150,64,32,${0.26*M.tide})`);
+    bg.addColorStop(1, `rgba(96,34,22,${0.34*M.tide})`);
+    ctx.fillStyle = bg; ctx.fillRect(0,HORIZON,W,H-HORIZON);
+  }
+}
+
+function drawShimmer(time){
+  const t = dawnEased;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  const rows = 34;
+  for (let i=0;i<rows;i++){
+    const d = i/rows;
+    const y = waterY(d*d*0.98 + 0.005);
+    const amp = 0.5 + d*3.5;
+    const a = (0.020 + 0.030*t) * (1-d*0.55) * (1-M.tide*0.7);
+    const w = W*(0.16 + d*0.5);
+    const x = (W*0.5) + Math.sin(time*0.22 + i*0.9)*W*0.14 + Math.sin(time*0.11 + i*2.2)*W*0.08;
+    const g = ctx.createLinearGradient(x-w/2,0,x+w/2,0);
+    g.addColorStop(0,"rgba(255,238,214,0)");
+    g.addColorStop(0.5,`rgba(255,238,214,${a})`);
+    g.addColorStop(1,"rgba(255,238,214,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x-w/2, y, w, Math.max(1, amp));
+  }
+  ctx.restore();
+}
+
+function drawRipples(dt){
+  for (let i=ripples.length-1;i>=0;i--){
+    const r = ripples[i];
+    r.life += dt;
+    const p = r.life / r.dur;
+    if (p >= 1){ ripples.splice(i,1); continue; }
+    const squash = 0.10 + r.d*0.32;
+    for (let k=0;k<r.rings;k++){
+      const kp = p - k*0.16;
+      if (kp <= 0) continue;
+      const rad = r.max * Math.pow(kp, 0.62);
+      const a = (1-kp)*(1-kp)*(0.34 - k*0.08)*(0.55 + dawnEased*0.6);
+      if (a <= 0.003) continue;
+      ctx.strokeStyle = `rgba(246,238,224,${a})`;
+      ctx.lineWidth = Math.max(0.5, 1.5*(1-kp));
+      ctx.beginPath(); ctx.ellipse(r.x, r.y, rad, rad*squash, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = `rgba(10,14,20,${a*0.5})`;
+      ctx.beginPath(); ctx.ellipse(r.x, r.y + Math.max(0.7, rad*squash*0.12), rad*0.96, rad*squash*0.96, 0, 0, Math.PI*2); ctx.stroke();
+    }
+  }
+}
+
+function drawWakes(dt){
+  for (let i=wakes.length-1;i>=0;i--){
+    const w = wakes[i];
+    w.life += dt; w.x += w.dir * w.speed * dt;
+    const p = w.life / w.dur;
+    if (p >= 1 || w.x < -W*0.2 || w.x > W*1.2){ wakes.splice(i,1); continue; }
+    const fade = Math.min(1, p*5) * Math.min(1, (1-p)*4);
+    const scale = 0.5 + w.d*1.6;
+    const len = W*0.16*scale, spread = H*0.030*scale;
+    ctx.save(); ctx.lineWidth = 1.1;
+    for (let s=-1;s<=1;s+=2){
+      const g = ctx.createLinearGradient(w.x, 0, w.x - w.dir*len, 0);
+      g.addColorStop(0, `rgba(248,240,226,${0.26*fade})`);
+      g.addColorStop(1, "rgba(248,240,226,0)");
+      ctx.strokeStyle = g;
+      ctx.beginPath(); ctx.moveTo(w.x, w.y);
+      ctx.quadraticCurveTo(w.x - w.dir*len*0.5, w.y + s*spread*0.55, w.x - w.dir*len, w.y + s*spread);
+      ctx.stroke();
+    }
+    ctx.fillStyle = `rgba(8,12,18,${0.30*fade})`;
+    ctx.beginPath(); ctx.ellipse(w.x - w.dir*len*0.06, w.y + spread*0.10, 11*scale, 3.4*scale, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawMinnows(dt){
+  for (let i=minnowBursts.length-1;i>=0;i--){
+    const b = minnowBursts[i];
+    b.life += dt;
+    const p = b.life/b.dur;
+    if (p>=1){ minnowBursts.splice(i,1); continue; }
+    const a = (1-p)*(1-p)*0.5;
+    ctx.strokeStyle = `rgba(236,232,222,${a})`; ctx.lineWidth = 1;
+    for (const f of b.fish){
+      const dist = f.sp * b.life * (1 + p*0.6);
+      const x = b.cx + Math.cos(f.a)*dist, y = b.cy + Math.sin(f.a)*dist*0.30;
+      ctx.beginPath(); ctx.moveTo(x, y);
+      ctx.lineTo(x - Math.cos(f.a)*f.len, y - Math.sin(f.a)*f.len*0.30); ctx.stroke();
+    }
+  }
+}
+
+function drawDeadFish(time){
+  if (M.tide < 0.01) return;
+  for (const f of deadFish){
+    const x = f.x + Math.sin(time*0.10 + f.bob)*f.drift*3;
+    const y = f.y + Math.sin(time*0.5 + f.bob)*1.2;
+    const a = 0.42*M.tide;
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(f.rot + Math.sin(time*0.3+f.bob)*0.06);
+    /* pale belly up, with the barest fin */
+    ctx.fillStyle = `rgba(226,214,196,${a})`;
+    ctx.beginPath(); ctx.ellipse(0,0, f.len, f.len*0.26, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `rgba(226,214,196,${a*0.8})`;
+    ctx.beginPath();
+    ctx.moveTo(-f.len*0.95, 0);
+    ctx.lineTo(-f.len*1.5, -f.len*0.30);
+    ctx.lineTo(-f.len*1.5,  f.len*0.30);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawDataOverlay(time){
+  if (M.data < 0.01) return;
+  const a = M.data;
+  ctx.save();
+  /* the scatter of observations, matched to the nearest sensor */
+  for (const p of dataPts){
+    const tw = 0.5 + 0.5*Math.sin(time*0.9 + p.ph);
+    ctx.fillStyle = `rgba(196,222,236,${0.30*a*tw})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+  }
+  /* two curves: the honest long lag, and the one that leaked the future.
+     They hang over the whole morning, well above the waterline, so the
+     prose never buries them. */
+  const y0 = H*0.30, amp = H*0.10;
+  for (const pass of [0,1]){
+    const shift = pass === 1 ? 3 : 0;         /* the twelve-hour lag, drawn as offset */
+    ctx.beginPath();
+    for (let i=0;i<dataCurve.length;i++){
+      const idx = clamp(i - shift, 0, dataCurve.length-1);
+      const x = W*(0.04 + 0.92*(i/(dataCurve.length-1)));
+      const y = y0 + (0.5 - dataCurve[idx])*2*amp;
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    if (pass === 1){
+      ctx.setLineDash([3,5]);
+      ctx.strokeStyle = `rgba(232,200,147,${0.42*a})`;
+      ctx.lineWidth = 1;
+    } else {
+      ctx.setLineDash([]);
+      ctx.strokeStyle = `rgba(206,230,240,${0.46*a})`;
+      ctx.lineWidth = 1.3;
+    }
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function reedPath(r, time, mirror){
+  const sway = Math.sin(time*r.speed + r.phase) * (0.05 + 0.09*(1-r.depth));
+  const dir = mirror ? -1 : 1;
+  return {
+    tipX: r.x + (r.lean + sway) * r.h * 0.55,
+    tipY: r.y - dir*r.h,
+    midX: r.x + (r.lean + sway) * r.h * 0.16,
+    midY: r.y - dir*r.h*0.55
+  };
+}
+
+/* the near bank, curving in from the left — it rises high enough that the
+   people standing on it are silhouetted against the lit fog, not lost in
+   the dark shallows */
+function bankY(x){
+  const t = Math.max(0, 1 - x/(W*0.52));
+  return H*0.99 - (H*0.26)*Math.pow(t, 1.4);
+}
+function drawBank(){
+  const c = tintC([9,11,15]);
+  ctx.save();
+  ctx.filter = "blur(2px)";
+  ctx.fillStyle = `rgba(${c[0]|0},${c[1]|0},${c[2]|0},0.94)`;
+  ctx.beginPath();
+  ctx.moveTo(-2, H+2);
+  for (let x=-2; x<=W*0.60; x+=W*0.02) ctx.lineTo(x, bankY(x));
+  ctx.lineTo(W*0.62, H+2);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  /* a few blades of grass on the lip so the edge is not a clean line */
+  ctx.strokeStyle = `rgba(${c[0]|0},${c[1]|0},${c[2]|0},0.9)`;
+  ctx.lineWidth = 1.2; ctx.lineCap = "round";
+  for (let i=0;i<40;i++){
+    const x = W*0.60*Math.pow(i/40, 1.4);
+    const y = bankY(x);
+    ctx.beginPath(); ctx.moveTo(x, y+2);
+    ctx.lineTo(x + (i%2?4:-4), y - H*(0.010 + (i%5)*0.004));
+    ctx.stroke();
+  }
+}
+
+function drawReeds(time, mirror, lo, hi){
+  const c = tintC(mix(PAL.reed[0], PAL.reed[1], dawnEased));
+  for (const r of reeds){
+    if (lo !== undefined && (r.depth <= lo || r.depth > hi)) continue;
+    if (mirror && r.y > H*0.94) continue;
+    const p = reedPath(r, time, mirror);
+    const alpha = mirror ? 0.16*(1-dawnEased*0.25) : lerp(0.55, 0.96, 1-r.depth);
+    ctx.strokeStyle = `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${alpha})`;
+    ctx.lineWidth = r.w * (mirror ? 0.8 : 1);
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(r.x, r.y);
+    ctx.quadraticCurveTo(p.midX, p.midY, p.tipX, p.tipY); ctx.stroke();
+    if (r.head){
+      ctx.fillStyle = `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${alpha})`;
+      ctx.save();
+      ctx.translate(p.tipX, p.tipY);
+      ctx.rotate((p.tipX - r.x) / Math.max(1,r.h) * 0.9);
+      ctx.beginPath(); ctx.ellipse(0, (mirror?-1:1)*r.w*2.4, r.w*0.95, r.h*0.075, 0, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+}
+
+function drawDragonflies(dt, time){
+  const vis = M.dragon;
+  if (vis < 0.02) return;
+  for (const d of dragonflies){
+    d.pause -= dt;
+    if (d.pause <= 0){
+      d.tx = clamp(d.x + (Math.random()-0.5)*W*0.34, W*0.03, W*0.97);
+      d.ty = clamp(d.y + (Math.random()-0.5)*H*0.14, HORIZON - H*0.06, H*0.92);
+      d.pause = 0.5 + Math.random()*2.2;
+    }
+    const ax = (d.tx - d.x)*5.0, ay = (d.ty - d.y)*5.0;
+    d.vx = d.vx*0.86 + ax*dt; d.vy = d.vy*0.86 + ay*dt;
+    d.x += d.vx*dt + Math.sin(time*7.3 + d.wing)*0.35;
+    d.y += d.vy*dt + Math.cos(time*6.1 + d.wing)*0.30;
+    if (Math.abs(d.vx) > 2) d.dir = d.vx > 0 ? 1 : -1;
+
+    const sp = Math.min(1, Math.hypot(d.vx,d.vy)/220);
+    const s = d.size * 0.46 * lerp(1.0, 1.30, 1 - Math.min(1,(d.y-HORIZON)/(H*0.4)));
+    const bodyA = (0.44 + 0.36*dawnEased) * vis;
+
+    ctx.save();
+    ctx.translate(d.x, d.y);
+    ctx.rotate(Math.atan2(d.vy, d.vx*d.dir) * 0.16 * d.dir);
+    ctx.scale(d.dir*s, s);
+    const beat = Math.sin(time*38 + d.wing);
+    ctx.fillStyle = `rgba(226,238,240,${(0.070 + 0.045*(1-sp))*vis})`;
+    for (const wy of [-1, 1]){
+      for (const wx of [-0.8, 1.8]){
+        ctx.save();
+        ctx.translate(wx, wy*0.3);
+        ctx.rotate(wy * (0.26 + beat*0.26));
+        ctx.beginPath(); ctx.ellipse(4.4, 0, 5.0, 0.95, 0, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    }
+    const bg = ctx.createLinearGradient(-10,0,6,0);
+    bg.addColorStop(0,   `hsla(${d.hue},40%,34%,${bodyA*0.35})`);
+    bg.addColorStop(0.7, `hsla(${d.hue},52%,50%,${bodyA*0.9})`);
+    bg.addColorStop(1,   `hsla(${d.hue+22},58%,64%,${bodyA})`);
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.ellipse(-4.8,0, 7.4, 0.50, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse( 2.6,0, 2.1, 1.05, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    if (d.y > HORIZON + H*0.02 && d.y < H*0.95){
+      ctx.save();
+      ctx.globalAlpha = 0.07*vis;
+      ctx.fillStyle = "rgba(220,240,240,1)";
+      ctx.beginPath(); ctx.ellipse(d.x, d.y + 15*s, 7*s, 0.9*s, 0, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+}
+
+/* ---------- the people on the bank ----------
+   Drawn as real bodies, not stick figures: a tapered torso, sloped
+   shoulders, limbs with mass. Everything is composed at full opacity on
+   an offscreen canvas and blitted once, so overlapping parts read as a
+   single clean shadow instead of a pile of strokes. Proportions come from
+   head-heights — a five-year-old is about five heads tall, an adult
+   seven and a half, and that difference alone is what makes one read as a
+   child and the other as a grown man.                                    */
+const FIG = {
+  child: { heads:5.0,  headR:0.100, headRx:0.084, headCy:0.900, neckHalf:0.036, neckTop:0.792,
+           shoulderY:0.748, shoulderHalf:0.096, chestY:0.685, chestHalf:0.092, waistY:0.605,
+           waistHalf:0.087, hipY:0.500, hipHalf:0.090, kneeY:0.255, ankleY:0.042,
+           thighW:0.082, calfW:0.055, footW:0.030, armW:0.048, foreW:0.038,
+           grip:[0.150,0.590], elbow:[0.112,0.640] },
+  youth: { heads:6.2,  headR:0.082, headRx:0.069, headCy:0.918, neckHalf:0.033, neckTop:0.828,
+           shoulderY:0.788, shoulderHalf:0.101, chestY:0.716, chestHalf:0.095, waistY:0.602,
+           waistHalf:0.082, hipY:0.497, hipHalf:0.090, kneeY:0.258, ankleY:0.041,
+           thighW:0.077, calfW:0.052, footW:0.029, armW:0.045, foreW:0.035,
+           grip:[0.158,0.615], elbow:[0.114,0.668] },
+  adult: { heads:7.5,  headR:0.067, headRx:0.056, headCy:0.933, neckHalf:0.031, neckTop:0.856,
+           shoulderY:0.822, shoulderHalf:0.110, chestY:0.745, chestHalf:0.100, waistY:0.606,
+           waistHalf:0.078, hipY:0.495, hipHalf:0.094, kneeY:0.265, ankleY:0.040,
+           thighW:0.074, calfW:0.050, footW:0.028, armW:0.043, foreW:0.034,
+           grip:[0.164,0.638], elbow:[0.108,0.690] }
+};
+/* the offscreen the body is composed on: unit space runs x -0.30..1.40, y 0..2.20 */
+const FBOX = { ox:0.30, w:1.70, h:2.20 };
+const figCv = document.createElement("canvas");
+const figCtx = figCv.getContext("2d");
+
+/* a limb with mass: a tapered polygon swept along a quadratic spine */
+function addLimb(g, p0, p1, p2, w0, w1){
+  const N = 14, L = [], R = [];
+  for (let i=0;i<=N;i++){
+    const t = i/N, mt = 1-t;
+    const px = mt*mt*p0[0] + 2*mt*t*p1[0] + t*t*p2[0];
+    const py = mt*mt*p0[1] + 2*mt*t*p1[1] + t*t*p2[1];
+    const dx = 2*mt*(p1[0]-p0[0]) + 2*t*(p2[0]-p1[0]);
+    const dy = 2*mt*(p1[1]-p0[1]) + 2*t*(p2[1]-p1[1]);
+    const len = Math.hypot(dx,dy) || 1;
+    const nx = -dy/len, ny = dx/len;
+    const w = (w0 + (w1-w0)*t) * 0.5;
+    L.push([px+nx*w, py+ny*w]);
+    R.push([px-nx*w, py-ny*w]);
+  }
+  g.beginPath();
+  g.moveTo(L[0][0], L[0][1]);
+  for (let i=1;i<L.length;i++) g.lineTo(L[i][0], L[i][1]);
+  for (let i=R.length-1;i>=0;i--) g.lineTo(R[i][0], R[i][1]);
+  g.closePath(); g.fill();
+}
+function addOval(g, cx, cy, rx, ry, rot){
+  g.beginPath(); g.ellipse(cx, cy, rx, ry, rot||0, 0, Math.PI*2); g.fill();
+}
+
+function composeBody(g, p, opts){
+  const rodAng = 0.90;                       /* radians above horizontal */
+  const gx = p.grip[0], gy = p.grip[1];
+
+  /* far leg and far arm first — they sit behind the trunk */
+  addLimb(g, [-0.030,p.hipY+0.02], [-0.052,p.kneeY], [-0.058,p.ankleY], p.thighW*0.92, p.calfW*0.80);
+  addOval(g, -0.058+p.footW*0.55, p.ankleY*0.45, p.footW*1.5, p.ankleY*0.62);
+  addLimb(g, [-p.shoulderHalf*0.72,p.shoulderY-0.012], [-p.shoulderHalf*0.86,p.chestY-0.10],
+             [gx*0.42, gy-0.030], p.armW*0.92, p.foreW*0.86);
+
+  /* pelvis, then the trunk: shoulders slope, waist draws in */
+  addOval(g, 0, p.hipY+0.012, p.hipHalf, 0.058);
+  g.beginPath();
+  g.moveTo(-p.hipHalf, p.hipY);
+  g.bezierCurveTo(-p.waistHalf-0.006, p.waistY-0.02, -p.chestHalf, p.chestY-0.035, -p.chestHalf, p.chestY);
+  g.bezierCurveTo(-p.chestHalf, p.chestY+0.035, -p.shoulderHalf, p.shoulderY-0.040, -p.shoulderHalf, p.shoulderY-0.006);
+  g.quadraticCurveTo(-p.shoulderHalf*0.55, p.shoulderY+0.026, -p.neckHalf, p.neckTop);
+  g.lineTo(p.neckHalf, p.neckTop);
+  g.quadraticCurveTo(p.shoulderHalf*0.55, p.shoulderY+0.026, p.shoulderHalf, p.shoulderY-0.006);
+  g.bezierCurveTo(p.shoulderHalf, p.shoulderY-0.040, p.chestHalf, p.chestY+0.035, p.chestHalf, p.chestY);
+  g.bezierCurveTo(p.chestHalf, p.chestY-0.035, p.waistHalf+0.006, p.waistY-0.02, p.hipHalf, p.hipY);
+  g.closePath(); g.fill();
+
+  /* the grandfather's coat: a little extra bulk that falls past the hip */
+  if (opts.coat){
+    g.beginPath();
+    g.moveTo(-p.shoulderHalf*0.98, p.shoulderY-0.03);
+    g.bezierCurveTo(-p.chestHalf-0.014, p.chestY, -p.hipHalf-0.020, p.hipY+0.02, -p.hipHalf-0.014, p.hipY-0.075);
+    g.lineTo(p.hipHalf+0.014, p.hipY-0.075);
+    g.bezierCurveTo(p.hipHalf+0.020, p.hipY+0.02, p.chestHalf+0.014, p.chestY, p.shoulderHalf*0.98, p.shoulderY-0.03);
+    g.closePath(); g.fill();
+  }
+
+  /* near leg */
+  addLimb(g, [0.038,p.hipY+0.02], [0.050,p.kneeY], [0.044,p.ankleY], p.thighW, p.calfW);
+  addOval(g, 0.044+p.footW*0.7, p.ankleY*0.45, p.footW*1.75, p.ankleY*0.66);
+
+  /* neck and head */
+  addLimb(g, [0,p.neckTop-0.02], [0,p.neckTop+0.01], [0,p.headCy-p.headR*0.72], p.neckHalf*2, p.neckHalf*1.9);
+  addOval(g, 0.004, p.headCy, p.headRx, p.headR, 0.06);
+
+  if (opts.hat){
+    /* a soft brim, worn level, the way a man who has stood here for forty years wears it */
+    addOval(g, 0.004, p.headCy + p.headR*0.44, p.headRx*2.15, p.headR*0.20, -0.04);
+    addOval(g, 0.004, p.headCy + p.headR*0.86, p.headRx*1.02, p.headR*0.50, -0.03);
+  } else if (opts.child){
+    /* a scruff of hair, slightly too long */
+    addOval(g, -0.004, p.headCy + p.headR*0.30, p.headRx*1.10, p.headR*0.62, 0.10);
+  }
+
+  /* near arm, raised to the grip */
+  addLimb(g, [p.shoulderHalf*0.80,p.shoulderY-0.020], p.elbow, [gx,gy], p.armW, p.foreW);
+  addOval(g, gx, gy, p.foreW*0.62, p.foreW*0.55);            /* the hand on the cork */
+
+  /* the rod: butt behind the fist, tapering to nothing at the tip */
+  const rl = opts.rod;
+  const bx = gx - Math.cos(rodAng)*0.11, by = gy - Math.sin(rodAng)*0.11;
+  const tx = gx + Math.cos(rodAng)*rl,   ty = gy + Math.sin(rodAng)*rl;
+  addLimb(g, [bx,by], [(bx+tx)/2, (by+ty)/2 + 0.02], [tx,ty], 0.016, 0.0035);
+  return { tip:[tx,ty], grip:[gx,gy] };
+}
+
+function drawAngler(x, groundY, h, opts, time, alpha){
+  if (alpha < 0.02) return;
+  const p = FIG[opts.kind];
+  const c = tintC([6,8,11]);
+
+  /* a breath of lit mist behind them, so the silhouette separates from
+     the bank instead of dissolving into it */
+  const halo = ctx.createRadialGradient(x, groundY - h*0.55, 0, x, groundY - h*0.55, h*1.15);
+  halo.addColorStop(0,   `rgba(226,224,220,${0.085*alpha})`);
+  halo.addColorStop(0.55,`rgba(226,224,220,${0.045*alpha})`);
+  halo.addColorStop(1,   "rgba(226,224,220,0)");
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.ellipse(x, groundY - h*0.55, h*1.15, h*0.95, 0, 0, Math.PI*2); ctx.fill();
+
+  /* compose the body offscreen at full opacity, then blit it once */
+  const pxW = Math.ceil(FBOX.w*h*DPR), pxH = Math.ceil(FBOX.h*h*DPR);
+  if (figCv.width < pxW || figCv.height < pxH){ figCv.width = pxW; figCv.height = pxH; }
+  figCtx.setTransform(1,0,0,1,0,0);
+  figCtx.clearRect(0,0,figCv.width,figCv.height);
+  figCtx.setTransform(DPR,0,0,DPR,0,0);
+  figCtx.save();
+  figCtx.translate(FBOX.ox*h, FBOX.h*h);
+  figCtx.scale(h, -h);                       /* unit space, y up, feet at the origin */
+  figCtx.fillStyle = `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+  const anat = composeBody(figCtx, p, opts);
+  figCtx.restore();
+
+  const destX = x - FBOX.ox*h, destY = groundY - FBOX.h*h;
+  ctx.save();
+  ctx.globalAlpha = 0.95*alpha;
+  ctx.drawImage(figCv, 0, 0, pxW, pxH, destX, destY, FBOX.w*h, FBOX.h*h);
+  ctx.restore();
+
+  /* the line out to the water, and a bobber that never dips */
+  const tipX = x + anat.tip[0]*h, tipY = groundY - anat.tip[1]*h;
+  const bx = tipX + W*0.070;
+  const by = lerp(groundY, HORIZON + (H-HORIZON)*0.42, 0.62);
+  ctx.strokeStyle = `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${0.42*alpha})`;
+  ctx.lineWidth = Math.max(0.6, h*0.005);
+  ctx.beginPath(); ctx.moveTo(tipX, tipY);
+  ctx.quadraticCurveTo((tipX+bx)/2, (tipY+by)/2 + h*0.12, bx, by);
+  ctx.stroke();
+
+  const bobY = by + Math.sin(time*1.1 + x)*1.1;
+  ctx.fillStyle = `rgba(232,200,147,${0.55*alpha})`;
+  ctx.beginPath(); ctx.arc(bx, bobY, Math.max(1.4, h*0.015), 0, Math.PI*2); ctx.fill();
+  const ringP = (time*0.35 + x) % 1;
+  ctx.strokeStyle = `rgba(240,232,218,${0.20*(1-ringP)*alpha})`;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(bx, bobY, 4 + ringP*22, (4 + ringP*22)*0.26, 0, 0, Math.PI*2);
+  ctx.stroke();
+}
+
+function drawCast(time){
+  const at = x => bankY(x) + 2;
+  /* five years old, alone with a rod taller than he is */
+  drawAngler(W*0.14, at(W*0.14), H*0.170, {kind:"child", rod:1.62, child:true}, time, castW.kid);
+  /* the same boy, and his grandfather a few feet down the bank */
+  drawAngler(W*0.13, at(W*0.13), H*0.165, {kind:"child", rod:1.62, child:true}, time, castW.pair);
+  drawAngler(W*0.34, at(W*0.34), H*0.255, {kind:"adult", rod:1.05, hat:true, coat:true}, time, castW.pair);
+  /* now he is the tall one, a few feet down the bank from a nine-year-old */
+  drawAngler(W*0.13, at(W*0.13), H*0.245, {kind:"adult", rod:1.05}, time, castW.mentor);
+  drawAngler(W*0.35, at(W*0.35), H*0.180, {kind:"youth", rod:1.55, child:true}, time, castW.mentor);
+  /* still the kid at the edge of the foggy pond */
+  drawAngler(W*0.15, at(W*0.15), H*0.225, {kind:"adult", rod:1.15}, time, castW.one);
+}
+
+function drawFog(time){
+  const t = dawnEased;
+  const fc = tintC(mix(PAL.fog[0], PAL.fog[1], t));
+  const dens = M.fog;
+  for (const f of fogBands){
+    f.x += f.drift * (1/60);
+    if (f.x > W*1.6) f.x = -W*0.6;
+    if (f.x < -W*0.6) f.x = W*1.6;
+    const y = f.y + Math.sin(time*0.16 + f.phase)*f.bob;
+    const g = ctx.createRadialGradient(f.x, y, 0, f.x, y, f.w*0.5);
+    const a = f.a * (0.75 + 0.35*Math.sin(time*0.1+f.phase)) * (1 - t*0.28) * dens;
+    g.addColorStop(0, `rgba(${fc[0]|0},${fc[1]|0},${fc[2]|0},${a})`);
+    g.addColorStop(0.55, `rgba(${fc[0]|0},${fc[1]|0},${fc[2]|0},${a*0.42})`);
+    g.addColorStop(1, `rgba(${fc[0]|0},${fc[1]|0},${fc[2]|0},0)`);
+    ctx.save();
+    ctx.translate(f.x, y); ctx.scale(1, f.h/(f.w*0.5)); ctx.translate(-f.x,-y);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(f.x, y, f.w*0.5, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  const bg = ctx.createLinearGradient(0, HORIZON-H*0.09, 0, HORIZON+H*0.13);
+  bg.addColorStop(0, `rgba(${fc[0]|0},${fc[1]|0},${fc[2]|0},0)`);
+  bg.addColorStop(0.42,`rgba(${fc[0]|0},${fc[1]|0},${fc[2]|0},${0.30*(1-t*0.35)*dens})`);
+  bg.addColorStop(1, `rgba(${fc[0]|0},${fc[1]|0},${fc[2]|0},0)`);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, HORIZON-H*0.09, W, H*0.22);
+}
+
+function drawMotes(time){
+  for (const f of motes){
+    f.y -= f.s * (1/60) * 10;
+    f.x += Math.sin(time*0.4 + f.ph) * 0.22 + f.dx;
+    if (f.y < -10){ f.y = H + 10; f.x = Math.random()*W; }
+    if (f.x < -10) f.x = W+10; if (f.x > W+10) f.x = -10;
+    const a = (0.10 + 0.16*Math.abs(Math.sin(time*0.8 + f.ph))) * (1 - dawnEased*0.35);
+    ctx.fillStyle = `rgba(252,240,214,${a})`;
+    ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+/* ---------- the four signs, demonstrated in order while you read them ---------- */
+const signEls = [...document.querySelectorAll("#signs li")];
+let signTimer = 0, signIdx = -1;
+function cycleSigns(dt){
+  const active = moodKey === "signs";
+  if (!active){
+    if (signIdx !== -1){ signEls.forEach(e=>e.classList.remove("live")); signIdx = -1; }
+    return;
+  }
+  signTimer -= dt;
+  if (signTimer <= 0){
+    signIdx = (signIdx + 1) % signEls.length;
+    signEls.forEach((e,i)=> e.classList.toggle("live", i === signIdx));
+    const sign = signEls[signIdx].dataset.sign;
+    if (sign === "dimple"){ spawnRipple("dimple"); spawnRipple("dimple"); }
+    if (sign === "rise")  { spawnRipple("rise"); }
+    if (sign === "minnow"){ spawnMinnows(); }
+    if (sign === "wake")  { spawnWake(); }
+    signTimer = 3.6;
+  }
+}
+
+let last = performance.now()/1000;
+function frame(now){
+  now /= 1000;
+  const dt = Math.min(0.05, now - last); last = now;
+  const time = now;
+
+  const maxScroll = Math.max(1, document.body.scrollHeight - window.innerHeight);
+  dawn = clamp(window.scrollY / maxScroll, 0, 1);
+  dawnEased += (dawn*dawn*(3-2*dawn) - dawnEased) * Math.min(1, dt*2.2);
+
+  Guide.tick(dt);
+  pickMood();
+  easeMood(dt);
+  cycleSigns(dt);
+
+  /* the pond's activity is set by the paragraph you are reading */
+  nextDimple -= dt*M.dimple; nextRise -= dt*M.rise;
+  nextWake -= dt*M.wake;     nextMinnow -= dt*M.minnow;
+  if (nextDimple <= 0){ spawnRipple("dimple"); nextDimple = 1.1 + Math.random()*3.4; }
+  if (nextRise   <= 0){ spawnRipple("rise");   nextRise   = 5.5 + Math.random()*10; }
+  if (nextWake   <= 0){ spawnWake();           nextWake   = 22 + Math.random()*26; }
+  if (nextMinnow <= 0){ spawnMinnows();        nextMinnow = 18 + Math.random()*24; }
+
+  const sun = drawSky();
+  drawTrees();
+  drawWater(sun);
+  drawReeds(time*0.55, true);
+  drawShimmer(time);
+  drawDataOverlay(time);
+  drawRipples(dt);
+  drawWakes(dt);
+  drawMinnows(dt);
+  drawDeadFish(time);
+  drawReeds(time, false, 0.35, 1.0);     /* reeds out in the pond, softened by fog */
+  drawFog(time);
+  drawBank();
+  drawCast(time);
+  drawReeds(time, false, -1, 0.35);      /* reeds on the near bank, crisp and in front */
+  drawDragonflies(dt, time);
+  drawMotes(time);
+
+  requestAnimationFrame(frame);
+}
+
+resize();
+requestAnimationFrame(frame);
+
+const io = new IntersectionObserver((entries)=>{
+  for (const e of entries){
+    if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+  }
+}, { threshold: 0.16, rootMargin: "0px 0px -8% 0px" });
+document.querySelectorAll(".rv").forEach(el => io.observe(el));
+
+/* ============================================================
+   SOUND
+   If audio/wood-thrush.mp3 exists it is used. Otherwise the bird is
+   synthesized: a wood thrush sings with two independent voices at once,
+   which is why it sounds like it is harmonizing with itself. The pitch
+   sits high (1.6-3.2 kHz), each syllable is a short swooping glide, and
+   the phrase ends in a rapid two-voice trill.
+   ============================================================ */
+const Sound = (() => {
+  let actx=null, master=null, verb=null, dry=null, wet=null, hp=null;
+  let running=false, timers=[], sampleBuf=null, lookedForRecording=false;
+
+  function impulse(seconds, decay){
+    const rate = actx.sampleRate, len = Math.floor(rate*seconds);
+    const buf = actx.createBuffer(2, len, rate);
+    for (let ch=0; ch<2; ch++){
+      const d = buf.getChannelData(ch);
+      for (let i=0;i<len;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, decay);
+    }
+    return buf;
+  }
+  function noiseBuffer(seconds){
+    const rate = actx.sampleRate, len = Math.floor(rate*seconds);
+    const buf = actx.createBuffer(1, len, rate);
+    const d = buf.getChannelData(0);
+    let lastOut = 0;
+    for (let i=0;i<len;i++){
+      const white = Math.random()*2-1;
+      lastOut = (lastOut + 0.02*white) / 1.02;
+      d[i] = lastOut * 3.2;
+    }
+    return buf;
+  }
+
+  async function tryLoadRecording(){
+    for (const ext of ["mp3","m4a","ogg","wav"]){
+      try{
+        const res = await fetch(`audio/wood-thrush.${ext}`, { method:"GET" });
+        if (!res.ok) continue;
+        const ab = await res.arrayBuffer();
+        sampleBuf = await actx.decodeAudioData(ab);
+        return true;
+      }catch(e){ /* not there — synthesize instead */ }
+    }
+    return false;
+  }
+
+  function init(){
+    if (actx) return;
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    master = actx.createGain(); master.gain.value = 0;
+    /* forest reverb: long, soft tail */
+    verb = actx.createConvolver(); verb.buffer = impulse(4.2, 2.4);
+    wet = actx.createGain(); wet.gain.value = 0.46;
+    dry = actx.createGain(); dry.gain.value = 0.78;
+    hp  = actx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 120;
+    verb.connect(wet); wet.connect(hp); dry.connect(hp);
+    hp.connect(master); master.connect(actx.destination);
+    buildBed();
+  }
+
+  /* --- ambience: air, water, no synth pad --- */
+  function buildBed(){
+    const nb = noiseBuffer(8);
+
+    const wind = actx.createBufferSource(); wind.buffer = nb; wind.loop = true;
+    const wf = actx.createBiquadFilter(); wf.type="lowpass"; wf.frequency.value = 380; wf.Q.value=0.3;
+    const wg = actx.createGain(); wg.gain.value = 0.050;
+    wind.connect(wf); wf.connect(wg); wg.connect(dry); wg.connect(verb); wind.start();
+    const gust = actx.createOscillator(); gust.frequency.value = 0.043;
+    const gg = actx.createGain(); gg.gain.value = 0.030;
+    gust.connect(gg); gg.connect(wg.gain); gust.start();
+
+    /* the body of still morning air, well below the bird */
+    const low = actx.createBufferSource(); low.buffer = nb; low.loop = true;
+    const lf = actx.createBiquadFilter(); lf.type="lowpass"; lf.frequency.value = 110;
+    const lg = actx.createGain(); lg.gain.value = 0.055;
+    low.connect(lf); lf.connect(lg); lg.connect(dry); low.start();
+
+    /* high airy hush, only into the reverb so it sits far away */
+    const hush = actx.createBufferSource(); hush.buffer = nb; hush.loop = true;
+    const hf = actx.createBiquadFilter(); hf.type="bandpass"; hf.frequency.value = 3600; hf.Q.value = 0.6;
+    const hg = actx.createGain(); hg.gain.value = 0.016;
+    hush.connect(hf); hf.connect(hg); hg.connect(verb); hush.start();
+  }
+
+  /* one flute-like syllable: two voices, a swooping contour, fast attack */
+  function syllable(t0, f0, dur, gain, shape){
+    const pts = 14;
+    const curveA = new Float32Array(pts), curveB = new Float32Array(pts);
+    for (let i=0;i<pts;i++){
+      const p = i/(pts-1);
+      let m;                                        /* the glide inside the note */
+      if (shape === "up")        m = 0.86 + 0.30*p;
+      else if (shape === "down") m = 1.14 - 0.28*p;
+      else if (shape === "arch") m = 0.90 + 0.34*Math.sin(p*Math.PI);
+      else                       m = 1.10 - 0.26*Math.sin(p*Math.PI);   /* dip */
+      curveA[i] = f0*m;
+      curveB[i] = f0*m*1.2734;                      /* the second voice, deliberately not a harmonic */
+    }
+
+    const oA = actx.createOscillator(); oA.type = "sine";
+    const oB = actx.createOscillator(); oB.type = "sine";
+    const oH = actx.createOscillator(); oH.type = "sine";  /* faint octave for body */
+    oA.frequency.setValueCurveAtTime(curveA, t0, dur);
+    oB.frequency.setValueCurveAtTime(curveB, t0, dur);
+    oH.frequency.setValueCurveAtTime(curveA.map(v=>v*2), t0, dur);
+
+    const gA = actx.createGain(); gA.gain.value = 1.0;
+    const gB = actx.createGain(); gB.gain.value = 0.34;
+    const gH = actx.createGain(); gH.gain.value = 0.055;
+
+    const env = actx.createGain();
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.exponentialRampToValueAtTime(gain, t0 + Math.min(0.016, dur*0.14));
+    env.gain.setValueAtTime(gain, t0 + dur*0.45);
+    env.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+    oA.connect(gA); oB.connect(gB); oH.connect(gH);
+    gA.connect(env); gB.connect(env); gH.connect(env);
+    env.connect(dry); env.connect(verb);
+    [oA,oB,oH].forEach(o=>{ o.start(t0); o.stop(t0+dur+0.05); });
+  }
+
+  /* the terminal flourish: a rapid two-voice trill that rings and fades */
+  function trill(t0, f0, dur, gain){
+    const oA = actx.createOscillator(); oA.type="sine";
+    const oB = actx.createOscillator(); oB.type="sine";
+    oA.frequency.value = f0;
+    oB.frequency.value = f0*1.2734;
+
+    const rate = 48 + Math.random()*26;
+    const lfo = actx.createOscillator(); lfo.type="sine"; lfo.frequency.value = rate;
+    const lg = actx.createGain(); lg.gain.value = f0*0.075;
+    lfo.connect(lg); lg.connect(oA.frequency); lg.connect(oB.frequency);
+
+    /* the same rate shivers the amplitude — that is the shimmer */
+    const am = actx.createOscillator(); am.type="sine"; am.frequency.value = rate;
+    const amg = actx.createGain(); amg.gain.value = 0.34;
+
+    const gB = actx.createGain(); gB.gain.value = 0.40;
+    const env = actx.createGain();
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.exponentialRampToValueAtTime(gain, t0+0.03);
+    env.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    am.connect(amg); amg.connect(env.gain);
+
+    oA.connect(env); oB.connect(gB); gB.connect(env);
+    env.connect(dry); env.connect(verb);
+    [oA,oB,lfo,am].forEach(o=>{ o.start(t0); o.stop(t0+dur+0.05); });
+  }
+
+  /* the soft low introductory notes most people never notice */
+  function introNote(t0, gain){
+    const o = actx.createOscillator(); o.type="sine";
+    const f = 340 + Math.random()*220;
+    o.frequency.setValueAtTime(f, t0);
+    o.frequency.linearRampToValueAtTime(f*0.88, t0+0.045);
+    const env = actx.createGain();
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.exponentialRampToValueAtTime(gain, t0+0.008);
+    env.gain.exponentialRampToValueAtTime(0.0001, t0+0.055);
+    o.connect(env); env.connect(verb); env.connect(dry);
+    o.start(t0); o.stop(t0+0.08);
+  }
+
+  function thrushPhrase(t0, far){
+    const level = far ? 0.030 : 0.075;
+    let t = t0;
+    /* 2-3 quiet introductory notes */
+    const intro = 2 + (Math.random()<0.5?1:0);
+    for (let i=0;i<intro;i++){ introNote(t, level*0.28); t += 0.075 + Math.random()*0.05; }
+    t += 0.05;
+
+    /* the fluted middle: 2-3 syllables, high and swooping */
+    const base = 1650 + Math.random()*900;
+    const shapes = ["arch","up","down","dip"];
+    const n = 2 + (Math.random()<0.6 ? 1 : 0);
+    let f = base;
+    for (let i=0;i<n;i++){
+      const dur = 0.11 + Math.random()*0.10;
+      syllable(t, f, dur, level*(1 - i*0.10), shapes[(Math.random()*shapes.length)|0]);
+      t += dur + 0.045 + Math.random()*0.075;
+      f = base * [1, 1.19, 0.84, 1.34][(Math.random()*4)|0];
+    }
+
+    /* and the trill it is named for */
+    trill(t + 0.03, base*(Math.random()<0.5 ? 1.32 : 1.66), 0.28 + Math.random()*0.18, level*0.78);
+  }
+
+  function playRecording(far){
+    const src = actx.createBufferSource();
+    src.buffer = sampleBuf;
+    src.playbackRate.value = 0.98 + Math.random()*0.04;
+    const g = actx.createGain(); g.gain.value = far ? 0.22 : 0.62;
+    src.connect(g); g.connect(dry); g.connect(verb);
+    src.start(actx.currentTime + 0.02);
+  }
+
+  function sing(far){ sampleBuf ? playRecording(far) : thrushPhrase(actx.currentTime + 0.05, far); }
+
+  function scheduleThrush(delay){
+    const id = setTimeout(()=>{
+      if (!running) return;
+      sing(false);
+      /* now and then, an answering bird further off in the trees */
+      if (Math.random() < 0.38){
+        const id2 = setTimeout(()=>{ if (running) sing(true); }, 1500 + Math.random()*1800);
+        timers.push(id2);
+      }
+      scheduleThrush(6 + Math.random()*11);
+    }, delay*1000);
+    timers.push(id);
+  }
+
+  function plink(){
+    const t0 = actx.currentTime + 0.02;
+    const f = 900 + Math.random()*1500;
+    const o = actx.createOscillator(); o.type="sine";
+    o.frequency.setValueAtTime(f, t0);
+    o.frequency.exponentialRampToValueAtTime(f*0.5, t0+0.14);
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.022 + Math.random()*0.014, t0+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.24);
+    o.connect(g); g.connect(verb); g.connect(dry);
+    o.start(t0); o.stop(t0+0.28);
+  }
+  function lap(){
+    const t0 = actx.currentTime + 0.02;
+    const src = actx.createBufferSource(); src.buffer = noiseBuffer(0.5);
+    const bp = actx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value = 420 + Math.random()*380; bp.Q.value = 0.9;
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(0.035, t0+0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.45);
+    src.connect(bp); bp.connect(g); g.connect(dry); g.connect(verb);
+    src.start(t0); src.stop(t0+0.5);
+  }
+  function peep(){
+    const t0 = actx.currentTime + 0.02;
+    const f = 3000 + Math.random()*2000;
+    const o = actx.createOscillator(); o.type="sine";
+    o.frequency.setValueAtTime(f, t0);
+    o.frequency.linearRampToValueAtTime(f*1.10, t0+0.04);
+    o.frequency.linearRampToValueAtTime(f*0.93, t0+0.10);
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.013, t0+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.13);
+    o.connect(g); g.connect(verb);
+    o.start(t0); o.stop(t0+0.16);
+  }
+  function scheduleAmbient(){
+    const id = setTimeout(()=>{
+      if (!running) return;
+      const r = Math.random();
+      if (r < 0.40) plink();
+      else if (r < 0.72) lap();
+      else { peep(); if (Math.random()<0.45) { const i2=setTimeout(peep,170); timers.push(i2); } }
+      scheduleAmbient();
+    }, (2.5 + Math.random()*8)*1000);
+    timers.push(id);
+  }
+
+  async function on(){
+    init();
+    if (actx.state === "suspended") await actx.resume();
+    if (!lookedForRecording){ lookedForRecording = true; await tryLoadRecording(); }
+    running = true;
+    master.gain.cancelScheduledValues(actx.currentTime);
+    master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), actx.currentTime);
+    master.gain.linearRampToValueAtTime(0.9, actx.currentTime + 3.0);
+    scheduleThrush(1.0);
+    scheduleAmbient();
+  }
+  function off(){
+    if (!actx) return;
+    running = false;
+    master.gain.cancelScheduledValues(actx.currentTime);
+    master.gain.setValueAtTime(master.gain.value, actx.currentTime);
+    master.gain.linearRampToValueAtTime(0.0001, actx.currentTime + 0.9);
+    timers.forEach(clearTimeout); timers = [];
+  }
+  return { on, off, isOn: ()=>running, usingRecording: ()=> !!sampleBuf };
+})();
+
+/* ============================================================
+   GUIDED READING
+   The story carries itself forward at reading pace so a phone reader can
+   just hold the thing and look. Any real scroll hands control straight
+   back; it picks up again once they settle.
+   ============================================================ */
+const Guide = (() => {
+  const TOTAL_SECONDS = 330;        /* ~5.5 minutes end to end, whatever the screen */
+  const RESUME_AFTER = 9;           /* seconds of stillness before it takes over again */
+  let on = false, pausedFor = 0, pos = 0, manual = false;
+
+  function maxScroll(){ return Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
+  function atEnd(){ return window.scrollY >= maxScroll() - 2; }
+
+  function tick(dt){
+    if (!on || REDUCED) return;
+    if (pausedFor > 0){
+      pausedFor -= dt;
+      if (pausedFor <= 0 && !manual) sync();
+      return;
+    }
+    if (atEnd()){ setOn(false); return; }
+    pos += (maxScroll() / TOTAL_SECONDS) * dt;
+    window.scrollTo(0, Math.round(pos));
+  }
+  function sync(){ pos = window.scrollY; }
+  function nudge(){                                  /* the reader took the wheel */
+    if (!on) return;
+    pausedFor = RESUME_AFTER;
+    sync();
+  }
+  function setOn(v){
+    on = v; manual = !v;
+    if (v){ sync(); pausedFor = 0; }
+    guideBtn.classList.toggle("paused", !v);
+  }
+  ["wheel","touchstart","touchmove","keydown"].forEach(ev =>
+    window.addEventListener(ev, nudge, { passive: true }));
+
+  return { tick, setOn, isOn: ()=>on, sync };
+})();
+
+const gate = document.getElementById("gate");
+const btn = document.getElementById("sound");
+const guideBtn = document.getElementById("guide");
+const hint = document.getElementById("hint");
+function setBtn(on){ btn.classList.toggle("on", on); btn.classList.toggle("off", !on); }
+
+let started = false;
+async function begin(withSound){
+  if (started) return;
+  started = true;
+  gate.classList.add("gone");
+  btn.classList.add("show");
+  guideBtn.classList.add("show");
+
+  if (withSound){
+    try { await Sound.on(); setBtn(true); } catch(e){ setBtn(false); }
+  } else setBtn(false);
+
+  if (!REDUCED){
+    Guide.setOn(true);
+    hint.classList.add("show");
+    setTimeout(()=> hint.classList.remove("show"), 7000);
+  } else {
+    guideBtn.classList.add("paused");
+  }
+  setTimeout(()=>{ gate.style.display = "none"; }, 1500);
+}
+
+gate.addEventListener("click", (e)=>{ begin(e.target.id !== "quiet"); });
+document.getElementById("quiet").addEventListener("click",(e)=>{ e.stopPropagation(); begin(false); });
+
+btn.addEventListener("click", async ()=>{
+  if (Sound.isOn()){ Sound.off(); setBtn(false); }
+  else { try { await Sound.on(); setBtn(true); } catch(e){} }
+});
+guideBtn.addEventListener("click", ()=>{
+  Guide.setOn(!Guide.isOn());
+  hint.classList.remove("show");
+});
+
+document.addEventListener("visibilitychange", ()=>{
+  if (document.hidden){
+    if (Sound.isOn()){ Sound.off(); setBtn(false); }
+    if (Guide.isOn()) Guide.setOn(false);
+  }
+});
+window.addEventListener("resize", ()=> Guide.sync(), { passive:true });
+</script>
+</body>
+</html>
