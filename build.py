@@ -91,7 +91,6 @@ for label, lines in sections:
         if p.startswith("“"):                      # the pull quote
             body.append(f'''      <blockquote>
         {p}
-        <span class="attr">Age Fourteen &middot; Chapter One</span>
       </blockquote>''')
         else:
             cls = ""
