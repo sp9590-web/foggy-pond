@@ -1222,9 +1222,13 @@ function composeBody(g, p, opts){
   }
 
   if (opts.hug){
-    /* the arm going round the boy's shoulders — the whole point of him */
-    const hx = 0.46, hy = 0.655;
-    addLimb(g, [p.shoulderHalf*0.78, p.shoulderY-0.015], [0.27, 0.735], [hx, hy], p.armW, p.foreW*0.94);
+    /* the arm going round the boy's shoulders — the whole point of him.
+       The target is computed from where the boy actually stands, so the hand
+       lands on his shoulder however the bank slopes. */
+    const hx = opts.hugTo[0], hy = opts.hugTo[1];
+    addLimb(g, [p.shoulderHalf*0.78, p.shoulderY-0.015],
+               [(p.shoulderHalf*0.78 + hx)*0.55, Math.max(hy, p.shoulderY-0.02) + 0.055],
+               [hx, hy], p.armW, p.foreW*0.94);
     addOval(g, hx, hy, p.foreW*0.68, p.foreW*0.52, -0.25);   /* the hand, resting */
     return { tip:null, grip:[hx,hy] };
   }
@@ -1301,8 +1305,11 @@ function drawAngler(x, groundY, h, opts, time, alpha){
 /* the closing tableau: the boy grown, and the space beside him his
    grandfather steps into */
 function closingPlaces(){
-  const hE = H*0.250, xE = W*0.185;
-  return { hE, xE, xG: xE + hE*0.46, hG: H*0.215 };
+  const hE = H*0.250, hG = H*0.215;
+  /* far enough right that the bank is nearly level under them — on the steep
+     left the two would stand a head apart in height and no arm would reach */
+  const xE = W*0.345;
+  return { hE, hG, xE, xG: xE + hE*0.36 };
 }
 
 function drawCast(time){
@@ -1453,10 +1460,18 @@ function drawReunion(time){
     ctx.beginPath(); ctx.ellipse(cx, cy, h*1.5, h*1.25, 0, 0, Math.PI*2); ctx.fill();
   }
 
+  /* where the boy's far shoulder actually is, in the elder's own body units */
+  const groundG   = bankY(p.xG) + 2;
+  const shoulderG = groundG - FIG.adult.shoulderY * p.hG;
+  const targetX   = (p.xG + p.hG*0.07 - p.xE) / p.hE;
+  const targetY   = ((bankY(p.xE) + 2) - shoulderG) / p.hE;
+  const reach     = smooth(0.62, 0.97, hugT);
+  const hugTo = [ lerp(0.17, targetX, reach), lerp(0.40, targetY, reach) ];
+
   drawAngler(x, y, h, {
-    kind:"elder", hug:true, hat:true, coat:true,
+    kind:"elder", hug:true, hat:true, coat:true, hugTo,
     blur: lerp(11, 0, solid)
-  }, time, lerp(0.30, 0.80, solid) * M.bless);
+  }, time, lerp(0.30, 0.82, solid) * M.bless);
 
   /* the last of the light he was made of, settling around them */
   const motesA = (1 - solid) * M.bless;
