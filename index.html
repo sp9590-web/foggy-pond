@@ -1676,7 +1676,7 @@ const Sound = (() => {
     signs:     { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     pair:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     guidebook: { nature:1.00, bird:0.90, om:0, tk:0, sn:0 },
-    redtide:   { nature:0.18, bird:0.00, om:2.10, tk:0, sn:0 },   /* the birds stop */
+    redtide:   { nature:0.18, bird:0.00, om:3.60, tk:0, sn:0 },   /* the birds stop */
     data:      { nature:0.10, bird:0.00, om:0.20, tk:1.85, sn:0 },
     depths:    { nature:0.62, bird:0.28, om:0.55, tk:0.60, sn:0 }, /* the machine receding */
     camp:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },      /* back to the pond */
@@ -1731,7 +1731,7 @@ const Sound = (() => {
     /* the loud sections would otherwise clip the output — hold the ceiling
        so the red tide and the machine can sit as loud as the bird */
     const limiter = actx.createDynamicsCompressor();
-    limiter.threshold.value = -8; limiter.knee.value = 0; limiter.ratio.value = 20;
+    limiter.threshold.value = -4; limiter.knee.value = 0; limiter.ratio.value = 20;
     limiter.attack.value = 0.003; limiter.release.value = 0.25;
     hp.connect(limiter); limiter.connect(master); master.connect(actx.destination);
 
@@ -1751,7 +1751,7 @@ const Sound = (() => {
     [[41.20,"sine"],[43.65,"sine"],[82.41,"triangle"],[87.31,"triangle"]].forEach(([f,type],i)=>{
       const o = actx.createOscillator(); o.type = type; o.frequency.value = f;
       o.detune.value = (i%2 ? 7 : -7);
-      const g = actx.createGain(); g.gain.value = i<2 ? 0.16 : 0.055;
+      const g = actx.createGain(); g.gain.value = i<2 ? 0.26 : 0.105;
       const swell = actx.createOscillator(); swell.frequency.value = 0.030 + i*0.011;
       const sg = actx.createGain(); sg.gain.value = i<2 ? 0.075 : 0.030;
       swell.connect(sg); sg.connect(g.gain); swell.start();
@@ -1764,7 +1764,7 @@ const Sound = (() => {
     const sweep = actx.createOscillator(); sweep.frequency.value = 0.021;
     const sweepG = actx.createGain(); sweepG.gain.value = 120;
     sweep.connect(sweepG); sweepG.connect(bp.frequency); sweep.start();
-    const g = actx.createGain(); g.gain.value = 0.16;
+    const g = actx.createGain(); g.gain.value = 0.26;
     src.connect(bp); bp.connect(g); g.connect(bus.om); src.start();
   }
 
