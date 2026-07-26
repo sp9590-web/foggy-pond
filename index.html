@@ -85,9 +85,7 @@ blockquote .attr{
   display:block; margin-top:1rem; font-family:var(--sans); font-style:normal;
   font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-dim);
 }
-/* the three cues, lit as the pond performs each one */
-.cue{font-style:italic; color:var(--ink); transition:color .9s ease, text-shadow .9s ease}
-.cue.live{color:var(--gold); text-shadow:0 0 18px rgba(232,200,147,.55)}
+.cue{font-style:italic; color:var(--ink)}
 .signs{list-style:none; margin:2rem 0 0; padding:0}
 .signs li{
   font-size:clamp(1rem,2.6vw,1.12rem); line-height:1.6; padding:.7rem 0 .7rem 1.5rem;
@@ -1230,10 +1228,11 @@ function composeBody(g, p, opts){
        The target is computed from where the boy actually stands, so the hand
        lands on his shoulder however the bank slopes. */
     const hx = opts.hugTo[0], hy = opts.hugTo[1];
-    addLimb(g, [p.shoulderHalf*0.78, p.shoulderY-0.015],
-               [(p.shoulderHalf*0.78 + hx)*0.55, Math.max(hy, p.shoulderY-0.02) + 0.055],
-               [hx, hy], p.armW, p.foreW*0.94);
-    addOval(g, hx, hy, p.foreW*0.68, p.foreW*0.52, -0.25);   /* the hand, resting */
+    const sx = p.shoulderHalf*0.78, sy = p.shoulderY - 0.015;
+    /* the elbow hangs a little below the line between shoulder and hand, so the
+       arm lies across his back instead of arching over his head */
+    addLimb(g, [sx, sy], [(sx+hx)*0.5, (sy+hy)*0.5 - 0.030], [hx, hy], p.armW, p.foreW*0.80);
+    addOval(g, hx, hy, p.foreW*0.46, p.foreW*0.38, -0.20);   /* the hand, resting */
     return { tip:null, grip:[hx,hy] };
   }
 
@@ -1309,7 +1308,7 @@ function drawAngler(x, groundY, h, opts, time, alpha){
 /* the closing tableau: the boy grown, and the space beside him his
    grandfather steps into */
 function closingPlaces(){
-  const hE = H*0.250, hG = H*0.215;
+  const hE = H*0.250, hG = H*0.258;   /* Neel grown — taller than the old man now */
   /* far enough right that the bank is nearly level under them — on the steep
      left the two would stand a head apart in height and no arm would reach */
   const xE = W*0.345;
@@ -1467,8 +1466,8 @@ function drawReunion(time){
   /* where the boy's far shoulder actually is, in the elder's own body units */
   const groundG   = bankY(p.xG) + 2;
   const shoulderG = groundG - FIG.adult.shoulderY * p.hG;
-  const targetX   = (p.xG + p.hG*0.07 - p.xE) / p.hE;
-  const targetY   = ((bankY(p.xE) + 2) - shoulderG) / p.hE;
+  const targetX   = (p.xG + p.hG*0.05 - p.xE) / p.hE;
+  const targetY   = ((bankY(p.xE) + 2) - (shoulderG + p.hG*0.03)) / p.hE;
   const reach     = smooth(0.62, 0.97, hugT);
   const hugTo = [ lerp(0.17, targetX, reach), lerp(0.40, targetY, reach) ];
 
