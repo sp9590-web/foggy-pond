@@ -109,10 +109,7 @@ blockquote .attr{
   font-family:var(--sans); font-size:.62rem; letter-spacing:.28em; text-transform:uppercase;
   color:rgba(167,159,149,.6); text-align:center; padding-bottom:5rem;
 }
-.colophon .dedic{
-  color:var(--gold); font-size:.74rem; letter-spacing:.30em; margin-bottom:1.15rem;
-  text-shadow:0 1px 22px rgba(9,12,17,.85);
-}
+
 .rv{opacity:0; transform:translateY(26px); transition:opacity 1.5s cubic-bezier(.2,.7,.2,1), transform 1.5s cubic-bezier(.2,.7,.2,1)}
 .rv.in{opacity:1; transform:none}
 
@@ -300,10 +297,7 @@ blockquote .attr{
     </div>
   </section>
 
-  <div class="colophon">
-    <div class="dedic">My Grandfather (RIP)</div>
-    Wood thrush &middot; dawn &middot; still water
-  </div>
+  <div class="colophon">Wood thrush &middot; dawn &middot; still water &middot; my grandfather (RIP)</div>
 </main>
 
 <div id="gate">
@@ -1332,9 +1326,10 @@ function drawCast(time){
   /* the same boy, and his grandfather a few feet down the bank */
   drawAngler(W*0.13, at(W*0.13), H*0.165, {kind:"child", rod:1.62, child:true}, time, castW.pair);
   drawAngler(W*0.34, at(W*0.34), H*0.250, {kind:"elder", rod:1.05, hat:true, coat:true}, time, castW.pair);
-  /* now he is the tall one, a few feet down the bank from a nine-year-old */
-  drawAngler(W*0.13, at(W*0.13), H*0.245, {kind:"adult", rod:1.05}, time, castW.mentor);
-  drawAngler(W*0.35, at(W*0.35), H*0.180, {kind:"youth", rod:1.55, child:true}, time, castW.mentor);
+  /* now he is the one a few feet down the bank — standing exactly where his
+     grandfather stood, with the nine-year-old up where he himself once was */
+  drawAngler(W*0.13, at(W*0.13), H*0.180, {kind:"youth", rod:1.55, child:true}, time, castW.mentor);
+  drawAngler(W*0.34, at(W*0.34), H*0.245, {kind:"adult", rod:1.05}, time, castW.mentor);
   /* still the kid at the edge of the foggy pond */
   const cp = closingPlaces();
   drawAngler(cp.xG, at(cp.xG), cp.hG, {kind:"adult", rod:1.15}, time, castW.one);
@@ -1481,6 +1476,24 @@ function drawReunion(time){
   const reach     = smooth(0.62, 0.97, hugT);
   const hugTo = [ lerp(0.17, targetX, reach), lerp(0.40, targetY, reach) ];
 
+  /* a gentle golden halo — he is not quite of this bank any more */
+  const haloA = solid * M.bless;
+  if (haloA > 0.01){
+    const hx = x + 0.004*h, hy = y - 0.945*h;
+    ctx.save();
+    ctx.filter = "blur(4px)";
+    const hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, h*0.46);
+    hg.addColorStop(0,    `rgba(255,226,160,${0.34*haloA})`);
+    hg.addColorStop(0.42, `rgba(255,214,140,${0.17*haloA})`);
+    hg.addColorStop(1,    "rgba(255,210,140,0)");
+    ctx.fillStyle = hg;
+    ctx.beginPath(); ctx.arc(hx, hy, h*0.46, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = `rgba(255,228,168,${0.30*haloA})`;
+    ctx.lineWidth = Math.max(1.2, h*0.016);
+    ctx.beginPath(); ctx.ellipse(hx, hy - h*0.02, h*0.235, h*0.205, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+
   drawAngler(x, y, h, {
     kind:"elder", hug:true, hat:true, coat:true, hugTo,
     blur: lerp(11, 0, solid)
@@ -1545,9 +1558,15 @@ function drawPerchers(time){
   const tipX = p.xG + (A.grip[0] + Math.cos(rodAng)*1.15) * p.hG;
   const tipY = groundG - (A.grip[1] + Math.sin(rodAng)*1.15) * p.hG;
 
+  /* the same two anchors his grandfather occupies: the crown of the hat, and
+     the hand resting on Neel's shoulder */
+  const groundE = bankY(p.xE) + 2;
+  const hatX = p.xE + p.hE*0.004, hatY = groundE - p.hE*1.010;
+  const handX = p.xE + ((p.xG + p.hG*0.05) - p.xE), handY = shoulderY + p.hG*0.03;
+
   const spots = [
-    { x: p.xG + p.hG*0.115, y: shoulderY - p.hG*0.020, fx: W*0.92, fy: HORIZON + H*0.13, t0:0.50, s:0.80 },
-    { x: tipX,              y: tipY - 2,               fx: W*1.02, fy: HORIZON + H*0.04, t0:0.62, s:0.66 }
+    { x: hatX,  y: hatY,          fx: W*0.92, fy: HORIZON + H*0.13, t0:0.50, s:0.74 },
+    { x: handX, y: handY - 2.5,   fx: W*1.02, fy: HORIZON + H*0.04, t0:0.62, s:0.66 }
   ];
   for (const sp of spots){
     const t = smooth(sp.t0, sp.t0 + 0.32, hugT);
