@@ -1,0 +1,47 @@
+[dawn]
+The fog came in low, just above the water, as if the pond were exhaling.
+
+[fog]
+The fog came in low, just above the water, as if the pond were exhaling. Dragonflies danced over the surface in flashes of blue, and somewhere in the shrouded trees a wood thrush welcomed the morning with its flute-like song.
+
+[pair]
+I was five, gripping a fishing rod almost as tall as I was. No bites, no splashes, no triumph, but I didn't feel bored. I felt like I was being let in on something. My grandfather stood a few feet down the bank. He never told me to be patient. He simply was, and I learned it from him the way you learn a language, by being near it.
+
+[signs]
+I learned to cast farther and tie cleaner knots, but the real lessons were more subtle. *A ripple that didn't repeat*, *a shadow that held too long beneath the surface*, *a sudden shift in wind*. The reward wasn't the fish. It was the slow pleasure of a morning spent paying attention.
+
+[guidebook]
+When I was fourteen, I tried to capture that feeling, not for school or a grade, but in a fishing guidebook I wrote. A real one with chapters, pictures, and a dedication page to my grandfather. In it, I wrote:
+
+"I have spent countless hours waiting for a bite. Many times I have been unsuccessful in catching what I was looking for, but, over time, I have learned that it's about fishing and not catching."
+
+At the time, I thought I was writing about fish and lures and bait. Looking back, I was describing the quiet reward of patience and, without really realizing it, writing instructions for myself.
+
+[redtide]
+The summer I was sixteen, the water showed me something it never had before. A red tide moved through a coast I had fished for years, an algal bloom that turned the water toxic. Fish surfaced belly-up by the thousands, and for the first time, the water I loved needed something back from me.
+
+[data]
+I found a way to listen closer and began exploring the problem through data science and artificial intelligence. Researchers have long worked to forecast harmful algal blooms, and I hoped to contribute to that effort. Using satellite observations, water-quality sensor data, and field samples, I trained a gradient-boosted model to pick out the conditions that build toward a bloom. A spike in chlorophyll here, a rise in temperature there, quiet cues not so different from the ones I once watched for on the water. The model showed the potential to forecast blooms several days in advance, which could give communities more time to prepare and respond. That work led to my first peer-reviewed publication, a small contribution to a large problem.
+
+[depths]
+Research feels familiar. There are long stretches where nothing seems to work, blind alleys, predictions that fail, data that refuses to cooperate. At one point it took me over a month to reconcile satellite readings that disagreed with the sensors in the water. It felt like untangling a snarled fishing line. I have learned to sit with it, to adjust, recalibrate, and try again, patiently looking for what's hidden in the depths.
+
+[camp]
+I have gone back to the same fishing camp for eleven straight summers, moving from camper to counselor-in-training to counselor. The clues there are the same, ripples and insects, except now I am the one a few feet down the bank.
+
+Last summer a nine-year-old wanted to quit after a second snag. The snag was not the problem. Everyone else was catching fish, and he had decided that meant he did not belong. I re-rigged his line and let my eyes drift toward a V-shaped wake near the reeds. His gaze followed mine. He caught nothing that morning, but on the walk back he told me about the wake instead of the fish. He was beginning to discover that the stillness is not empty, just like I silently absorbed my my grandfather.
+
+[closing]
+My grandfather is gone now, and I miss him everyday. But his lessons were never really about fishing. They were about how to wait, how to listen, how to pay attention, and how to keep searching when answers do not come easily.
+
+I'm still the kid at that foggy pond, and I carry my grandfather's silent lessons to every pond, every dataset, every day, exploring the natural world that has not finished speaking. I am listening.
+
+
+---------------------------------------------------------------
+NOTES (delete or ignore — I don't render anything below this line)
+
+- Edit the text freely. Keep the [labels] — they pick the visuals and music.
+- Blank line = new paragraph.
+- *stars* in [signs] mark the three cues that light up as the pond performs
+  each one. Keep three of them; reword as you like.
+- The indented line in [guidebook] is the pull quote.
