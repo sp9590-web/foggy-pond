@@ -104,7 +104,7 @@ for label, lines in sections:
     </div>
   </section>''')
 
-out.append('''  <div class="colophon">Wood thrush &middot; dawn &middot; still water &middot; my grandfather (RIP)</div>
+out.append('''  <div class="colophon">Dedicated to my Grandfather. RIP.</div>
 </main>''')
 new_main = "\n\n".join(out)
 

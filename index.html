@@ -106,8 +106,8 @@ blockquote .attr{
 }
 .rule{width:44px; height:1px; background:rgba(232,200,147,.5); margin:3.2rem auto}
 .colophon{
-  font-family:var(--sans); font-size:.62rem; letter-spacing:.28em; text-transform:uppercase;
-  color:rgba(167,159,149,.6); text-align:center; padding-bottom:5rem;
+  font-family:var(--sans); font-size:.66rem; letter-spacing:.28em; text-transform:uppercase;
+  color:rgba(255,226,160,.42); text-align:center; padding-bottom:5rem;
 }
 
 .rv{opacity:0; transform:translateY(26px); transition:opacity 1.5s cubic-bezier(.2,.7,.2,1), transform 1.5s cubic-bezier(.2,.7,.2,1)}
@@ -297,7 +297,7 @@ blockquote .attr{
     </div>
   </section>
 
-  <div class="colophon">Wood thrush &middot; dawn &middot; still water &middot; my grandfather (RIP)</div>
+  <div class="colophon">Dedicated to my Grandfather. RIP.</div>
 </main>
 
 <div id="gate">
@@ -1328,7 +1328,7 @@ function drawCast(time){
   drawAngler(W*0.34, at(W*0.34), H*0.250, {kind:"elder", rod:1.05, hat:true, coat:true}, time, castW.pair);
   /* now he is the one a few feet down the bank — standing exactly where his
      grandfather stood, with the nine-year-old up where he himself once was */
-  drawAngler(W*0.13, at(W*0.13), H*0.180, {kind:"youth", rod:1.55, child:true}, time, castW.mentor);
+  drawAngler(W*0.13, at(W*0.13), H*0.140, {kind:"child", rod:1.62, child:true}, time, castW.mentor);
   drawAngler(W*0.34, at(W*0.34), H*0.245, {kind:"adult", rod:1.05}, time, castW.mentor);
   /* still the kid at the edge of the foggy pond */
   const cp = closingPlaces();
