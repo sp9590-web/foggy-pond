@@ -111,6 +111,10 @@ blockquote .attr{
   font-family:var(--sans); font-size:.62rem; letter-spacing:.28em; text-transform:uppercase;
   color:rgba(167,159,149,.6); text-align:center; padding-bottom:5rem;
 }
+.colophon .dedic{
+  color:var(--gold); font-size:.74rem; letter-spacing:.30em; margin-bottom:1.15rem;
+  text-shadow:0 1px 22px rgba(9,12,17,.85);
+}
 .rv{opacity:0; transform:translateY(26px); transition:opacity 1.5s cubic-bezier(.2,.7,.2,1), transform 1.5s cubic-bezier(.2,.7,.2,1)}
 .rv.in{opacity:1; transform:none}
 
@@ -294,13 +298,16 @@ blockquote .attr{
     </div>
   </section>
 
-  <div class="colophon">Wood thrush &middot; dawn &middot; still water</div>
+  <div class="colophon">
+    <div class="dedic">My Grandfather (RIP)</div>
+    Wood thrush &middot; dawn &middot; still water
+  </div>
 </main>
 
 <div id="gate">
   <div class="g-inner">
     <p class="g-title">Somewhere in the shrouded trees&hellip;</p>
-    <p class="g-lead">A slow story about a foggy pond, a grandfather, and learning to pay attention.</p>
+    <p class="g-lead">A dreamy story about a foggy pond, my grandfather, and learning to pay attention.</p>
     <div class="g-btn" id="startBtn">Tap to begin</div>
     <p class="g-how">
       <span>It moves on its own &mdash; just read.</span>
@@ -500,24 +507,30 @@ function buildScene(){
   }
 
   /* the readouts he lived in for a winter, hung across the sky */
-  const pw = W < 640 ? W*0.385 : W*0.295;
-  const ph = H*0.132;
-  const bars = [], line = [], scat = [], cells = [];
-  for (let i=0;i<9;i++)  bars.push(0.18 + rnd()*0.82);
-  for (let i=0;i<26;i++) line.push(0.5 + Math.sin(i*0.55)*0.26 + (rnd()-0.5)*0.22);
-  for (let i=0;i<34;i++){ const sx = rnd(); scat.push({ x:sx, y: clamp(0.16 + sx*0.66 + (rnd()-0.5)*0.34, 0.02, 0.98) }); }
-  for (let i=0;i<36;i++) cells.push(rnd());
+  const pw = W < 640 ? W*0.400 : W*0.285;
+  const ph = H*0.128;
+  const colL = W*0.050, colR = W < 640 ? W*0.545 : W*0.655;
+  const rowY = [H*0.070, H*0.240, H*0.410];
+  const mk = (n, f) => Array.from({length:n}, (_,i) => f(i));
   charts = [
-    { type:"bars",    x:W*0.055, y:H*0.050, w:pw, h:ph, d:bars },
-    { type:"line",    x:W*0.560, y:H*0.050, w:pw, h:ph, d:line },
-    { type:"matrix",  x:W*0.055, y:H*0.415, w:pw, h:ph, d:cells, n:6 },
-    { type:"scatter", x:W*0.560, y:H*0.415, w:pw, h:ph, d:scat }
+    { type:"bars",    label:"CHLOROPHYLL-a",       hue:"cyan",   x:colL, y:rowY[0], w:pw, h:ph,
+      d: mk(9,  ()=> 0.18 + rnd()*0.82) },
+    { type:"line",    label:"SEA SURFACE TEMP",    hue:"cyan",   x:colR, y:rowY[0], w:pw, h:ph,
+      d: mk(26, i => 0.5 + Math.sin(i*0.55)*0.26 + (rnd()-0.5)*0.22) },
+    { type:"matrix",  label:"FEATURE CORRELATION", hue:"violet", x:colL, y:rowY[1], w:pw, h:ph, n:6,
+      d: mk(36, ()=> rnd()) },
+    { type:"scatter", label:"PREDICTED / OBSERVED",hue:"cyan",   x:colR, y:rowY[1], w:pw, h:ph,
+      d: mk(34, ()=>{ const x = rnd(); return { x, y: clamp(0.16 + x*0.66 + (rnd()-0.5)*0.34, 0.02, 0.98) }; }) },
+    { type:"hist",    label:"BLOOM PROBABILITY",   hue:"green",  x:colL, y:rowY[2], w:pw, h:ph,
+      d: mk(16, i => Math.exp(-Math.pow((i-10)/3.6, 2)) * (0.75 + rnd()*0.25)) },
+    { type:"ring",    label:"MODEL CONFIDENCE",    hue:"gold",   x:colR, y:rowY[2], w:pw, h:ph,
+      d: [0.87] }
   ];
 
   /* the network he trained, laid over the morning */
   net = { layers: [], edges: [] };
-  const sizes = [4, 6, 6, 3];
-  const topY = H*0.055, botY = H*0.94;
+  const sizes = [4, 7, 8, 6, 3];
+  const topY = H*0.050, botY = H*0.945;
   for (let l=0;l<sizes.length;l++){
     const col = [];
     const n = sizes[l];
@@ -787,55 +800,76 @@ function drawDeadFish(time){
   }
 }
 
-/* Charts hung in the sky for the winter he spent inside the data.
-   Cyan for what he measured, gold for the result that was too good to be true. */
+/* Charts hung in the sky for the winter he spent inside the data. */
+const HUES = {
+  cyan:   [150,214,240],
+  violet: [178,158,238],
+  green:  [136,214,178],
+  gold:   [232,200,147]
+};
+function tracked(text, cx, y, size, spacing, color){
+  ctx.font = `600 ${size}px ui-sans-serif, -apple-system, "Helvetica Neue", Arial, sans-serif`;
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  const chars = [...text];
+  let w = -spacing;
+  for (const c of chars) w += ctx.measureText(c).width + spacing;
+  let x = cx - w/2;
+  ctx.fillStyle = color;
+  for (const c of chars){ ctx.fillText(c, x, y); x += ctx.measureText(c).width + spacing; }
+}
+
 function drawCharts(time){
   if (M.data < 0.01 || !charts.length) return;
   const a = M.data;
-  const ink   = (o)=> `rgba(196,228,244,${o*a})`;
-  const glow  = (o)=> `rgba(150,214,240,${o*a})`;
-  const gold  = (o)=> `rgba(232,200,147,${o*a})`;
+
+  /* what all of this was for */
+  tracked("ARTIFICIAL INTELLIGENCE", W*0.5, H*0.032, Math.max(9, W*0.021), Math.max(2.4, W*0.0075),
+          `rgba(214,240,252,${0.62*a})`);
+  tracked("HARMFUL ALGAL BLOOM FORECAST", W*0.5, H*0.032 + Math.max(11, W*0.026),
+          Math.max(6.5, W*0.0128), Math.max(1.6, W*0.0042), `rgba(232,200,147,${0.50*a})`);
 
   for (const c of charts){
     const {x, y, w, h} = c;
+    const C = HUES[c.hue] || HUES.cyan;
+    const tone = (o)=> `rgba(${C[0]},${C[1]},${C[2]},${o*a})`;
+    const ink  = (o)=> `rgba(196,228,244,${o*a})`;
+    const gold = (o)=> `rgba(232,200,147,${o*a})`;
 
-    /* axes: just an L, plus a few ticks, so it reads as a plot */
-    ctx.strokeStyle = ink(0.34); ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x, y); ctx.lineTo(x, y+h); ctx.lineTo(x+w, y+h);
-    ctx.stroke();
-    ctx.strokeStyle = ink(0.16);
-    for (let i=1;i<=3;i++){
-      const gy = y + h*(1 - i/4);
-      ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x+w, gy); ctx.stroke();
+    tracked(c.label, x + w/2, y - Math.max(4, h*0.075), Math.max(5.5, W*0.0118),
+            Math.max(1.1, W*0.0032), ink(0.52));
+
+    if (c.type !== "ring"){
+      ctx.strokeStyle = ink(0.34); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y+h); ctx.lineTo(x+w, y+h); ctx.stroke();
+      ctx.strokeStyle = ink(0.14);
+      for (let i=1;i<=3;i++){ const gy = y + h*(1 - i/4);
+        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x+w, gy); ctx.stroke(); }
     }
 
-    if (c.type === "bars"){
-      const bw = w/(c.d.length*1.55);
+    if (c.type === "bars" || c.type === "hist"){
+      const gap = c.type === "hist" ? 1.06 : 1.55;
+      const bw = w/(c.d.length*gap);
       c.d.forEach((v,i)=>{
         const bh = h * v * (0.86 + 0.14*Math.sin(time*1.1 + i*0.7));
         const bx = x + w*(i+0.5)/c.d.length - bw/2;
         const g = ctx.createLinearGradient(0, y+h-bh, 0, y+h);
-        g.addColorStop(0, glow(0.72)); g.addColorStop(1, glow(0.16));
-        ctx.fillStyle = g;
-        ctx.fillRect(bx, y+h-bh, bw, bh);
+        g.addColorStop(0, tone(0.80)); g.addColorStop(1, tone(0.14));
+        ctx.fillStyle = g; ctx.fillRect(bx, y+h-bh, bw, bh);
       });
     }
 
     else if (c.type === "line"){
-      const px = i => x + w*i/(c.d.length-1);
-      const py = i => y + h*(1 - c.d[i]);
+      const px = i => x + w*i/(c.d.length-1), py = i => y + h*(1 - c.d[i]);
       ctx.beginPath(); ctx.moveTo(px(0), y+h);
       for (let i=0;i<c.d.length;i++) ctx.lineTo(px(i), py(i));
       ctx.lineTo(px(c.d.length-1), y+h); ctx.closePath();
       const g = ctx.createLinearGradient(0, y, 0, y+h);
-      g.addColorStop(0, glow(0.30)); g.addColorStop(1, "rgba(150,214,240,0)");
+      g.addColorStop(0, tone(0.34)); g.addColorStop(1, tone(0));
       ctx.fillStyle = g; ctx.fill();
-      ctx.strokeStyle = ink(0.85); ctx.lineWidth = 1.4;
+      ctx.strokeStyle = tone(0.92); ctx.lineWidth = 1.4;
       ctx.beginPath();
       for (let i=0;i<c.d.length;i++) i ? ctx.lineTo(px(i), py(i)) : ctx.moveTo(px(i), py(i));
       ctx.stroke();
-      /* a marker running along the series */
       const t = (time*0.10) % 1, idx = Math.min(c.d.length-1, Math.floor(t*(c.d.length-1)));
       ctx.fillStyle = gold(0.95);
       ctx.beginPath(); ctx.arc(px(idx), py(idx), 2.6, 0, Math.PI*2); ctx.fill();
@@ -846,7 +880,7 @@ function drawCharts(time){
       c.d.forEach((v,i)=>{
         const cx = i % n, cy = (i/n)|0;
         const pulse = 0.72 + 0.28*Math.sin(time*0.8 + i*0.35);
-        ctx.fillStyle = (cx === cy) ? gold(0.55*pulse) : glow(0.10 + 0.62*v*pulse);
+        ctx.fillStyle = (cx === cy) ? gold(0.58*pulse) : tone(0.10 + 0.70*v*pulse);
         ctx.fillRect(x + cx*cw + 1, y + cy*chh + 1, cw-2, chh-2);
       });
     }
@@ -854,15 +888,23 @@ function drawCharts(time){
     else if (c.type === "scatter"){
       c.d.forEach((p,i)=>{
         const tw = 0.55 + 0.45*Math.sin(time*1.3 + i*0.9);
-        ctx.fillStyle = glow(0.80*tw);
+        ctx.fillStyle = tone(0.85*tw);
         ctx.beginPath(); ctx.arc(x + w*p.x, y + h*(1-p.y), 1.9, 0, Math.PI*2); ctx.fill();
       });
-      /* the fit through them */
-      ctx.setLineDash([4,4]); ctx.strokeStyle = gold(0.72); ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(x, y + h*(1-0.16));
-      ctx.lineTo(x+w, y + h*(1-0.82));
-      ctx.stroke(); ctx.setLineDash([]);
+      ctx.setLineDash([4,4]); ctx.strokeStyle = gold(0.75); ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(x, y + h*0.84); ctx.lineTo(x+w, y + h*0.18); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    else if (c.type === "ring"){
+      const cx = x + w/2, cy = y + h/2, r = Math.min(w,h)*0.40;
+      const v = c.d[0] * (0.97 + 0.03*Math.sin(time*0.9));
+      ctx.lineWidth = Math.max(3, r*0.24); ctx.lineCap = "round";
+      ctx.strokeStyle = ink(0.16);
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = tone(0.95);
+      ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + Math.PI*2*v); ctx.stroke();
+      tracked(Math.round(v*100) + "%", cx, cy + r*0.30, Math.max(8, r*0.62), 0.6, tone(0.95));
     }
   }
 }
@@ -918,7 +960,7 @@ function drawDataOverlay(time){
   /* two curves: the honest long lag, and the one that leaked the future.
      They hang over the whole morning, well above the waterline, so the
      prose never buries them. */
-  const y0 = H*0.30, amp = H*0.10;
+  const y0 = H*0.735, amp = H*0.055;
   for (const pass of [0,1]){
     const shift = pass === 1 ? 3 : 0;         /* the twelve-hour lag, drawn as offset */
     ctx.beginPath();
@@ -1179,6 +1221,14 @@ function composeBody(g, p, opts){
     addOval(g, -0.004, p.headCy + p.headR*0.30, p.headRx*1.10, p.headR*0.62, 0.10);
   }
 
+  if (opts.hug){
+    /* the arm going round the boy's shoulders — the whole point of him */
+    const hx = 0.46, hy = 0.655;
+    addLimb(g, [p.shoulderHalf*0.78, p.shoulderY-0.015], [0.27, 0.735], [hx, hy], p.armW, p.foreW*0.94);
+    addOval(g, hx, hy, p.foreW*0.68, p.foreW*0.52, -0.25);   /* the hand, resting */
+    return { tip:null, grip:[hx,hy] };
+  }
+
   /* near arm, raised to the grip */
   addLimb(g, [p.shoulderHalf*0.80,p.shoulderY-0.020], p.elbow, [gx,gy], p.armW, p.foreW);
   addOval(g, gx, gy, p.foreW*0.62, p.foreW*0.55);            /* the hand on the cork */
@@ -1221,8 +1271,11 @@ function drawAngler(x, groundY, h, opts, time, alpha){
   const destX = x - FBOX.ox*h, destY = groundY - FBOX.h*h;
   ctx.save();
   ctx.globalAlpha = 0.95*alpha;
+  if (opts.blur) ctx.filter = `blur(${opts.blur}px)`;
   ctx.drawImage(figCv, 0, 0, pxW, pxH, destX, destY, FBOX.w*h, FBOX.h*h);
   ctx.restore();
+
+  if (!anat.tip) return;
 
   /* the line out to the water, and a bobber that never dips */
   const tipX = x + anat.tip[0]*h, tipY = groundY - anat.tip[1]*h;
@@ -1245,6 +1298,13 @@ function drawAngler(x, groundY, h, opts, time, alpha){
   ctx.stroke();
 }
 
+/* the closing tableau: the boy grown, and the space beside him his
+   grandfather steps into */
+function closingPlaces(){
+  const hE = H*0.250, xE = W*0.185;
+  return { hE, xE, xG: xE + hE*0.46, hG: H*0.215 };
+}
+
 function drawCast(time){
   const at = x => bankY(x) + 2;
   /* five years old, alone with a rod taller than he is */
@@ -1256,7 +1316,8 @@ function drawCast(time){
   drawAngler(W*0.13, at(W*0.13), H*0.245, {kind:"adult", rod:1.05}, time, castW.mentor);
   drawAngler(W*0.35, at(W*0.35), H*0.180, {kind:"youth", rod:1.55, child:true}, time, castW.mentor);
   /* still the kid at the edge of the foggy pond */
-  drawAngler(W*0.15, at(W*0.15), H*0.225, {kind:"adult", rod:1.15}, time, castW.one);
+  const cp = closingPlaces();
+  drawAngler(cp.xG, at(cp.xG), cp.hG, {kind:"adult", rod:1.15}, time, castW.one);
 }
 
 function drawFog(time){
@@ -1290,8 +1351,11 @@ function drawFog(time){
 /* He is gone, so he is not a figure on the bank any more — he is the shape
    the clouds make when the light comes up, watching, and glad. Kept soft and
    warm and low-contrast so it reads as weather that happens to look like him. */
+let hugT = 0;                       /* 0 = watching from the sky, 1 = beside him */
+function smooth(e0, e1, x){ const t = clamp((x-e0)/(e1-e0), 0, 1); return t*t*(3-2*t); }
+
 function drawBlessing(time){
-  const a = M.bless;
+  const a = M.bless * (1 - smooth(0.34, 0.60, hugT));   /* he leaves the sky to come down */
   if (a < 0.01) return;
   const s = Math.min(W, H) * 0.170;
   const cx = W*0.50, cy = H*0.175 + Math.sin(time*0.18)*s*0.03;
@@ -1362,6 +1426,51 @@ function drawBlessing(time){
   ctx.restore();
 }
 
+/* He comes down. The face in the clouds gathers itself into the shape of the
+   man, walks the last of the distance, and puts an arm around the boy he
+   taught — still half made of light, because he is a memory, but here. */
+function drawReunion(time){
+  if (M.bless < 0.01 || hugT <= 0.02) return;
+  const p = closingPlaces();
+  const arrive = smooth(0.28, 0.86, hugT);
+  const solid  = smooth(0.34, 0.92, hugT);
+
+  const skyX = W*0.50, skyY = H*0.175;
+  const gy = bankY(p.xE) + 2;
+  const x  = lerp(skyX, p.xE, arrive);
+  const y  = lerp(skyY + H*0.16, gy, arrive);
+  const h  = lerp(p.hE*0.42, p.hE, arrive);
+
+  /* warmth gathering around the two of them */
+  const glowA = solid * 0.30;
+  if (glowA > 0.01){
+    const cx = (x + p.xG)/2, cy = y - h*0.45;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, h*1.5);
+    g.addColorStop(0, `rgba(255,226,178,${glowA*0.42})`);
+    g.addColorStop(0.5,`rgba(255,220,170,${glowA*0.16})`);
+    g.addColorStop(1, "rgba(255,220,170,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(cx, cy, h*1.5, h*1.25, 0, 0, Math.PI*2); ctx.fill();
+  }
+
+  drawAngler(x, y, h, {
+    kind:"elder", hug:true, hat:true, coat:true,
+    blur: lerp(11, 0, solid)
+  }, time, lerp(0.30, 0.80, solid) * M.bless);
+
+  /* the last of the light he was made of, settling around them */
+  const motesA = (1 - solid) * M.bless;
+  if (motesA > 0.01){
+    for (let i=0;i<12;i++){
+      const t = ((time*0.09) + i/12) % 1;
+      const mx = x + Math.sin(i*2.3 + time*0.3)*h*0.9;
+      const my = y - h*1.5 + t*h*1.6;
+      ctx.fillStyle = `rgba(255,238,208,${0.45*motesA*Math.sin(t*Math.PI)})`;
+      ctx.beginPath(); ctx.arc(mx, my, 1.6, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
 function drawMotes(time){
   for (const f of motes){
     f.y -= f.s * (1/60) * 10;
@@ -1410,6 +1519,7 @@ function frame(now){
   dawnEased += (dawn*dawn*(3-2*dawn) - dawnEased) * Math.min(1, dt*2.2);
 
   Guide.tick(dt);
+  hugT = (moodKey === "closing") ? Math.min(1, hugT + dt/17) : Math.max(0, hugT - dt/3);
   pickMood();
   Sound.setMood(moodKey);
   easeMood(dt);
@@ -1440,6 +1550,7 @@ function frame(now){
   drawBlessing(time);
   drawBank();
   drawCast(time);
+  drawReunion(time);
   drawReeds(time, false, -1, 0.35);      /* reeds on the near bank, crisp and in front */
   drawDragonflies(dt, time);
   drawMotes(time);
@@ -1470,18 +1581,18 @@ const Sound = (() => {
   let running=false, timers=[], sampleBuf=null, lookedForRecording=false;
   /* one bus per voice of the score, so the story can cross-fade between them */
   const bus = {};
-  let moodNow = "dawn";
+  let moodNow = "dawn", birdHoldUntil = 0;
   const SCORE = {
     dawn:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     fog:       { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     signs:     { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     pair:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },
     guidebook: { nature:1.00, bird:0.90, om:0, tk:0, sn:0 },
-    redtide:   { nature:0.18, bird:0.00, om:1.00, tk:0, sn:0 },   /* the birds stop */
-    data:      { nature:0.10, bird:0.00, om:0.10, tk:1.00, sn:0 },
-    depths:    { nature:0.62, bird:0.28, om:0.28, tk:0.30, sn:0 }, /* the machine receding */
+    redtide:   { nature:0.18, bird:0.00, om:2.10, tk:0, sn:0 },   /* the birds stop */
+    data:      { nature:0.10, bird:0.00, om:0.20, tk:1.85, sn:0 },
+    depths:    { nature:0.62, bird:0.28, om:0.55, tk:0.60, sn:0 }, /* the machine receding */
     camp:      { nature:1.00, bird:1.00, om:0, tk:0, sn:0 },      /* back to the pond */
-    closing:   { nature:0.75, bird:0.55, om:0, tk:0, sn:1.00 }
+    closing:   { nature:0.75, bird:0.55, om:0, tk:0, sn:1.90 }
   };
 
   function impulse(seconds, decay){
@@ -1527,9 +1638,14 @@ const Sound = (() => {
     verb = actx.createConvolver(); verb.buffer = impulse(4.2, 2.4);
     wet = actx.createGain(); wet.gain.value = 0.46;
     dry = actx.createGain(); dry.gain.value = 0.78;
-    hp  = actx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 120;
+    hp  = actx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 42;   /* low enough to let the red tide through */
     verb.connect(wet); wet.connect(hp); dry.connect(hp);
-    hp.connect(master); master.connect(actx.destination);
+    /* the loud sections would otherwise clip the output — hold the ceiling
+       so the red tide and the machine can sit as loud as the bird */
+    const limiter = actx.createDynamicsCompressor();
+    limiter.threshold.value = -8; limiter.knee.value = 0; limiter.ratio.value = 20;
+    limiter.attack.value = 0.003; limiter.release.value = 0.25;
+    hp.connect(limiter); limiter.connect(master); master.connect(actx.destination);
 
     for (const name of ["nature","bird","om","tk","sn"]){
       const g = actx.createGain();
@@ -1708,6 +1824,7 @@ const Sound = (() => {
     const id = setTimeout(()=>{
       if (!running) return;
       if ((SCORE[moodNow] || {}).bird < 0.1){ scheduleThrush(4 + Math.random()*4); return; }
+      if (actx.currentTime < birdHoldUntil){ scheduleThrush(birdHoldUntil - actx.currentTime + Math.random()); return; }
       sing(false);
       /* now and then, an answering bird further off in the trees */
       if (Math.random() < 0.38){
@@ -1847,6 +1964,10 @@ const Sound = (() => {
 
   function setMood(key){
     if (!actx || !bus.nature || key === moodNow) return;
+    const was = SCORE[moodNow] || SCORE.dawn, will = SCORE[key] || SCORE.dawn;
+    /* coming back from the machine, let the water be heard alone for a moment
+       before the first thrush — the return should feel earned, not instant */
+    if (will.bird > 0.1 && was.bird < 0.1) birdHoldUntil = actx.currentTime + 4.2;
     moodNow = key;
     const s = SCORE[key] || SCORE.dawn;
     const now = actx.currentTime;
