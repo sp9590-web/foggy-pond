@@ -476,7 +476,7 @@ function buildScene(){
   for (let i=0;i<dcount;i++){
     const x = W*(0.08+rnd()*0.84), y = HORIZON + H*(0.02+rnd()*0.24);
     dragonflies.push({ x, y, tx:x, ty:y, vx:0, vy:0, size: 0.75 + rnd()*0.85,
-                       hue: 168 + rnd()*70, wing: rnd()*Math.PI*2, pause: rnd()*2, dir: 1 });
+                       hue: 192 + rnd()*24, wing: rnd()*Math.PI*2, pause: rnd()*2, dir: 1 });
   }
 
   motes = [];
@@ -1086,10 +1086,20 @@ function drawDragonflies(dt, time){
         ctx.restore();
       }
     }
+    /* a hot blue glow, so they flash the way they do over real water */
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const gl = ctx.createRadialGradient(-1,0,0,-1,0,11);
+    gl.addColorStop(0, `hsla(${d.hue},100%,66%,${bodyA*0.55})`);
+    gl.addColorStop(1, `hsla(${d.hue},100%,60%,0)`);
+    ctx.fillStyle = gl;
+    ctx.beginPath(); ctx.arc(-1,0,11,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
     const bg = ctx.createLinearGradient(-10,0,6,0);
-    bg.addColorStop(0,   `hsla(${d.hue},40%,34%,${bodyA*0.35})`);
-    bg.addColorStop(0.7, `hsla(${d.hue},52%,50%,${bodyA*0.9})`);
-    bg.addColorStop(1,   `hsla(${d.hue+22},58%,64%,${bodyA})`);
+    bg.addColorStop(0,   `hsla(${d.hue},95%,44%,${bodyA*0.55})`);
+    bg.addColorStop(0.7, `hsla(${d.hue},100%,62%,${bodyA})`);
+    bg.addColorStop(1,   `hsla(${d.hue+14},100%,74%,${bodyA})`);
     ctx.fillStyle = bg;
     ctx.beginPath(); ctx.ellipse(-4.8,0, 7.4, 0.50, 0, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse( 2.6,0, 2.1, 1.05, 0, 0, Math.PI*2); ctx.fill();
@@ -1489,6 +1499,65 @@ function drawReunion(time){
   }
 }
 
+/* At the very end, two dragonflies come in off the water and settle on him —
+   the same blue flashes from the first morning, come back to say so. */
+function drawNeonFly(x, y, s, time, landed, alpha){
+  const beat = landed ? (Math.sin(time*3.1 + x) > 0.93 ? Math.sin(time*40) : 0) : Math.sin(time*38 + x);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+
+  ctx.globalCompositeOperation = "lighter";
+  const gl = ctx.createRadialGradient(0,0,0,0,0,16);
+  gl.addColorStop(0, `rgba(120,215,255,${0.50*alpha})`);
+  gl.addColorStop(1, "rgba(90,190,255,0)");
+  ctx.fillStyle = gl;
+  ctx.beginPath(); ctx.arc(0,0,16,0,Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = `rgba(214,242,255,${(landed ? 0.16 : 0.22)*alpha})`;
+  for (const wy of [-1,1]){
+    for (const wx of [-1.0, 2.0]){
+      ctx.save();
+      ctx.translate(wx, wy*0.35);
+      ctx.rotate(wy * (landed ? 0.42 + beat*0.05 : 0.26 + beat*0.30));
+      ctx.beginPath(); ctx.ellipse(5.2, 0, 6.0, 1.1, 0, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+  ctx.globalCompositeOperation = "source-over";
+
+  const bg = ctx.createLinearGradient(-11,0,7,0);
+  bg.addColorStop(0,   `hsla(202,95%,46%,${0.55*alpha})`);
+  bg.addColorStop(0.7, `hsla(200,100%,64%,${alpha})`);
+  bg.addColorStop(1,   `hsla(190,100%,78%,${alpha})`);
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.ellipse(-5.4,0, 8.2, 0.62, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse( 2.8,0, 2.4, 1.20, 0, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawPerchers(time){
+  if (M.bless < 0.01 || hugT < 0.48) return;
+  const p = closingPlaces();
+  const groundG   = bankY(p.xG) + 2;
+  const shoulderY = groundG - FIG.adult.shoulderY * p.hG;
+  const A = FIG.adult, rodAng = 0.90;
+  const tipX = p.xG + (A.grip[0] + Math.cos(rodAng)*1.15) * p.hG;
+  const tipY = groundG - (A.grip[1] + Math.sin(rodAng)*1.15) * p.hG;
+
+  const spots = [
+    { x: p.xG + p.hG*0.115, y: shoulderY - p.hG*0.020, fx: W*0.92, fy: HORIZON + H*0.13, t0:0.50, s:0.80 },
+    { x: tipX,              y: tipY - 2,               fx: W*1.02, fy: HORIZON + H*0.04, t0:0.62, s:0.66 }
+  ];
+  for (const sp of spots){
+    const t = smooth(sp.t0, sp.t0 + 0.32, hugT);
+    if (t <= 0.001) continue;
+    const x = lerp(sp.fx, sp.x, t);
+    const y = lerp(sp.fy, sp.y, t) - Math.sin(t*Math.PI)*H*0.055;   /* an arc, not a slide */
+    drawNeonFly(x, y, sp.s, time, t > 0.985, Math.min(1, t*3) * M.bless);
+  }
+}
+
 function drawMotes(time){
   for (const f of motes){
     f.y -= f.s * (1/60) * 10;
@@ -1569,6 +1638,7 @@ function frame(now){
   drawBank();
   drawCast(time);
   drawReunion(time);
+  drawPerchers(time);
   drawReeds(time, false, -1, 0.35);      /* reeds on the near bank, crisp and in front */
   drawDragonflies(dt, time);
   drawMotes(time);
