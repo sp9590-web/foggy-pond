@@ -72,7 +72,6 @@ for label, lines in sections:
       <h1>Fishing,<br><em>Not Catching</em></h1>
       <p class="dek">{ps[0]}</p>
     </div>
-    <div class="scrollcue">Scroll</div>
   </section>''')
         continue
 

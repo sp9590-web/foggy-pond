@@ -230,7 +230,6 @@ blockquote .attr{
       <h1>Fishing,<br><em>Not Catching</em></h1>
       <p class="dek">The fog came in low, just above the water, as if the pond were exhaling.</p>
     </div>
-    <div class="scrollcue">Scroll</div>
   </section>
 
   <section class="beat" data-mood="fog">
@@ -1902,43 +1901,65 @@ const Sound = (() => {
    back; it picks up again once they settle.
    ============================================================ */
 const Guide = (() => {
-  const TOTAL_SECONDS = 330;        /* ~5.5 minutes end to end, whatever the screen */
-  const RESUME_AFTER = 9;           /* seconds of stillness before it takes over again */
-  let on = false, pausedFor = 0, pos = 0, manual = false;
+  const TOTAL_SECONDS = 265;        /* end to end, whatever the screen */
+  const RESUME_AFTER  = 0.9;        /* seconds after the reader's last input */
+  const SETTLE        = 0.28;       /* plus however long the fling takes to stop */
+  let on = false, pausedFor = 0, pos = 0, lastY = 0, settle = 0;
 
   function maxScroll(){ return Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
   function atEnd(){ return window.scrollY >= maxScroll() - 2; }
+  function sync(){ pos = window.scrollY; lastY = pos; settle = 0; }
 
   function tick(dt){
     if (!on || REDUCED) return;
-    if (pausedFor > 0){
-      pausedFor -= dt;
-      if (pausedFor <= 0 && !manual) sync();
-      return;
-    }
-    /* if the page moved and it wasn't us, the reader took over — hand it back.
-       Catches scrollbar drags, arrow keys, anchor jumps and anything else that
-       never fires a wheel or touch event. */
-    if (Math.abs(window.scrollY - pos) > 4){ nudge(); return; }
+
+    if (pausedFor > 0){ pausedFor -= dt; lastY = window.scrollY; return; }
+
+    /* don't fight a fling — wait until the page has actually stopped moving,
+       then pick up from wherever the reader left it */
+    if (Math.abs(window.scrollY - lastY) > 0.5){ lastY = window.scrollY; settle = 0; return; }
+    if (settle < SETTLE){ settle += dt; return; }
+
+    /* any movement we didn't cause means the reader took over: adopt their
+       position rather than yanking the page back */
+    if (Math.abs(window.scrollY - pos) > 4) sync();
+
     if (atEnd()){ setOn(false); return; }
     pos += (maxScroll() / TOTAL_SECONDS) * dt;
     window.scrollTo(0, Math.round(pos));
+    lastY = window.scrollY;
   }
-  function sync(){ pos = window.scrollY; }
   function nudge(){                                  /* the reader took the wheel */
     if (!on) return;
     pausedFor = RESUME_AFTER;
-    sync();
+    settle = 0;
+    lastY = window.scrollY;
   }
   function setOn(v){
-    on = v; manual = !v;
-    if (v){ sync(); pausedFor = 0; }
+    on = v;
+    if (v){ sync(); pausedFor = 0; settle = SETTLE; }
     guideBtn.classList.toggle("paused", !v);
   }
   ["wheel","touchstart","touchmove","keydown"].forEach(ev =>
     window.addEventListener(ev, nudge, { passive: true }));
 
   return { tick, setOn, isOn: ()=>on, sync };
+})();
+
+/* Keep the screen alive. A five-minute read with no taps will otherwise put a
+   phone to sleep and drop the reader back at the home screen. */
+const Awake = (() => {
+  let lock = null;
+  async function acquire(){
+    try {
+      if ("wakeLock" in navigator && !lock && !document.hidden){
+        lock = await navigator.wakeLock.request("screen");
+        lock.addEventListener("release", ()=>{ lock = null; });
+      }
+    } catch(e){ /* denied or unsupported — nothing else we can do */ }
+  }
+  function release(){ try { lock && lock.release(); } catch(e){} lock = null; }
+  return { acquire, release };
 })();
 
 const gate = document.getElementById("gate");
@@ -1959,6 +1980,7 @@ async function begin(withSound){
     try { await Sound.on(); setBtn(true); } catch(e){ setBtn(false); }
   } else setBtn(false);
 
+  Awake.acquire();
   if (!REDUCED){
     Guide.setOn(true);
     hint.classList.add("show");
@@ -1980,10 +2002,19 @@ guideBtn.addEventListener("click", ()=>{
   hint.classList.remove("show");
 });
 
-document.addEventListener("visibilitychange", ()=>{
+/* If the reader looks away, go quiet — but come back exactly as they left it
+   rather than stranding them on a silent, motionless page. */
+let wasSound = false, wasGuide = false;
+document.addEventListener("visibilitychange", async ()=>{
   if (document.hidden){
-    if (Sound.isOn()){ Sound.off(); setBtn(false); }
-    if (Guide.isOn()) Guide.setOn(false);
+    wasSound = Sound.isOn(); wasGuide = Guide.isOn();
+    if (wasSound){ Sound.off(); setBtn(false); }
+    if (wasGuide) Guide.setOn(false);
+    Awake.release();
+  } else if (started){
+    Awake.acquire();
+    if (wasSound){ try { await Sound.on(); setBtn(true); } catch(e){} }
+    if (wasGuide) Guide.setOn(true);
   }
 });
 window.addEventListener("resize", ()=> Guide.sync(), { passive:true });
